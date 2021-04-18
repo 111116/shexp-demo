@@ -277,44 +277,48 @@ static int initScene(scene_t *scene)
 		"a_normal"
 	};
 
-	const char *vp =
-		"#version 150 core\n"
-		"in vec3 a_position;\n"
-		"in vec3 a_normal;\n"
-		"uniform mat4 u_view;\n"
-		"uniform mat4 u_projection;\n"
-		"out vec3 v_normal;\n"
+	const char *vp = R"(
 
-		"void main()\n"
-		"{\n"
-		"    gl_Position = u_projection * (u_view * vec4(a_position, 1.0));\n"
-		"    v_normal = a_normal;\n"
-		"}\n";
+#version 150 core
+in vec3 a_position;
+in vec3 a_normal;
+uniform mat4 u_view;
+uniform mat4 u_projection;
+out vec3 v_normal;
 
-	const char *fp =
-		"#version 150 core\n"
-		"in vec3 v_normal;\n"
-		"uniform vec3 u_coefficients[9];\n"
-		"out vec4 o_color;\n"
+void main()
+{
+    gl_Position = u_projection * (u_view * vec4(a_position, 1.0));
+    v_normal = a_normal;
+}
 
-		"void main()\n"
-		"{\n"
-		"    vec3 n = normalize(v_normal);\n"
-		"    vec3 SHLightResult[9];\n"
-		"    SHLightResult[0] = 0.282095f * u_coefficients[0];\n"
-		"    SHLightResult[1] = -0.488603f * n.y * u_coefficients[1];\n"
-		"    SHLightResult[2] = 0.488603f * n.z * u_coefficients[2];\n"
-		"    SHLightResult[3] = -0.488603f * n.x * u_coefficients[3];\n"
-		"    SHLightResult[4] = 1.092548f * n.x * n.y * u_coefficients[4];\n"
-		"    SHLightResult[5] = -1.092548f * n.y * n.z * u_coefficients[5];\n"
-		"    SHLightResult[6] = 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];\n"
-		"    SHLightResult[7] = -1.092548f * n.x * n.z * u_coefficients[7];\n"
-		"    SHLightResult[8] = 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];\n"
-		"    vec3 result = vec3(0.0);\n"
-		"    for (int i = 0; i < 9; ++i)\n"
-		"        result += SHLightResult[i];\n"
-		"    o_color = vec4(result, 1.0);\n"
-		"}\n";
+)";
+
+	const char *fp = R"(
+#version 150 core
+in vec3 v_normal;
+uniform vec3 u_coefficients[9];
+out vec4 o_color;
+
+void main()
+{
+    vec3 n = normalize(v_normal);
+    vec3 SHLightResult[9];
+    SHLightResult[0] = 0.282095f * u_coefficients[0];
+    SHLightResult[1] = -0.488603f * n.y * u_coefficients[1];
+    SHLightResult[2] = 0.488603f * n.z * u_coefficients[2];
+    SHLightResult[3] = -0.488603f * n.x * u_coefficients[3];
+    SHLightResult[4] = 1.092548f * n.x * n.y * u_coefficients[4];
+    SHLightResult[5] = -1.092548f * n.y * n.z * u_coefficients[5];
+    SHLightResult[6] = 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];
+    SHLightResult[7] = -1.092548f * n.x * n.z * u_coefficients[7];
+    SHLightResult[8] = 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];
+    vec3 result = vec3(0.0);
+    for (int i = 0; i < 9; ++i)
+        result += SHLightResult[i];
+    o_color = vec4(result, 1.0);
+}
+)";
 
 	scene->mesh.program = s_loadProgram(vp, fp, attribs, 2);
 	if (!scene->mesh.program)
