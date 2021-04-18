@@ -136,8 +136,8 @@ static int initScene(scene_t *scene)
 	scene->sky.u_cubemap = glGetUniformLocation(scene->sky.program, "u_cubemap");
 
 	//#define SKY_DIR "cubemaps/colors/"
-	//#define SKY_DIR "cubemaps/tantolunden2/"
-	#define SKY_DIR "cubemaps/room/"
+	// #define SKY_DIR "../res/cubemaps/tantolunden2/"
+	#define SKY_DIR "../res/cubemaps/room/"
 	//#define SKY_DIR "cubemaps/powerlines/"
 	//#define SKY_DIR "cubemaps/bridge3/"
 	//#define SKY_DIR "cubemaps/coittower2/"
@@ -221,7 +221,7 @@ static int initScene(scene_t *scene)
 
 	// mesh
 	//yo_scene *yo = yo_load_obj("sphere.obj", true, false);
-	yo_scene *yo = yo_load_obj("dog.obj", true, false);
+	yo_scene *yo = yo_load_obj("../res/dog.obj", true, false);
 	if (!yo || !yo->nshapes)
 	{
 		fprintf(stderr, "Error loading obj file\n");
