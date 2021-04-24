@@ -36,6 +36,7 @@ extern "C"
 
 #include "consolelog.hpp"
 #include "sh.hpp"
+#include "LHcubemap.hpp"
 
 typedef struct
 {
@@ -55,6 +56,7 @@ typedef struct
 
 static int initScene(scene_t *scene)
 {
+
 	scene->mesh.coefficients[0] = m_vec3{0.735427, 0.613381, 0.58883};
 	scene->mesh.coefficients[1] = m_vec3{0.102978, 0.138365, 0.166129};
 	scene->mesh.coefficients[2] = m_vec3{0.508975, 0.420545, 0.433161};
@@ -218,7 +220,7 @@ static void destroyScene(scene_t *scene)
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	static float position[] = { 0.0f, 0.0f, 3.0f };
+	static float position[] = { 0.0f, 0.5f, 3.0f };
 	static float rotation[] = { 0.0f, 0.0f };
 
 	// mouse look
@@ -279,8 +281,8 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_ALPHA_BITS, 8);
 	glfwWindowHint(GLFW_DEPTH_BITS, 32);
 	glfwWindowHint(GLFW_STENCIL_BITS, GLFW_DONT_CARE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
