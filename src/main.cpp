@@ -67,7 +67,7 @@ static int initScene(scene_t *scene)
 
 	// mesh
 	//yo_scene *yo = yo_load_obj("sphere.obj", true, false);
-	yo_scene *yo = yo_load_obj("../res/dog.obj", true, false);
+	yo_scene *yo = yo_load_obj("../res/ball.obj", true, false);
 	if (!yo || !yo->nshapes)
 	{
 		fprintf(stderr, "Error loading obj file\n");
@@ -157,17 +157,22 @@ void main()
     vec3 n = normalize(v_normal);
     vec3 SHLightResult[9];
     SHLightResult[0] = 0.282095f * u_coefficients[0];
-    SHLightResult[1] = -0.488603f * n.y * u_coefficients[1];
-    SHLightResult[2] = 0.488603f * n.z * u_coefficients[2];
-    SHLightResult[3] = -0.488603f * n.x * u_coefficients[3];
-    SHLightResult[4] = 1.092548f * n.x * n.y * u_coefficients[4];
-    SHLightResult[5] = -1.092548f * n.y * n.z * u_coefficients[5];
-    SHLightResult[6] = 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];
-    SHLightResult[7] = -1.092548f * n.x * n.z * u_coefficients[7];
-    SHLightResult[8] = 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];
+    SHLightResult[1] = 2.0/3 * -0.488603f * n.y * u_coefficients[1];
+    SHLightResult[2] = 2.0/3 * 0.488603f * n.z * u_coefficients[2];
+    SHLightResult[3] = 2.0/3 * -0.488603f * n.x * u_coefficients[3];
+    SHLightResult[4] = 1.0/4 * 1.092548f * n.x * n.y * u_coefficients[4];
+    SHLightResult[5] = 1.0/4 * -1.092548f * n.y * n.z * u_coefficients[5];
+    SHLightResult[6] = 1.0/4 * 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];
+    SHLightResult[7] = 1.0/4 * -1.092548f * n.x * n.z * u_coefficients[7];
+    SHLightResult[8] = 1.0/4 * 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];
+    // H is PI times coefficients above, but brdf is reflectance / PI
     vec3 result = vec3(0.0);
     for (int i = 0; i < 9; ++i)
         result += SHLightResult[i];
+    result = 0.8 * result; // reflectance
+    float gamma = 2.2;
+    result = max(result, 0.0);
+    result = pow(result, vec3(1.0/gamma));
     o_color = vec4(result, 1.0);
 }
 )";
