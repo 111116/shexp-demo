@@ -134,9 +134,9 @@ inline int SHIndex(int l, int m) {
     return l*l+l+m;
 }
 
-// #include "shproject.hpp"
-// #include "shrotate.hpp"
-// #include "shproduct.hpp"
+#include "shproject.hpp"
+#include "shrotate.hpp"
+#include "shproduct.hpp"
 // #include "shlog.hpp"
 
 

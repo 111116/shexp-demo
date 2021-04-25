@@ -46,7 +46,9 @@ typedef struct
 		GLint u_view;
 		GLint u_projection;
 		GLint u_coefficients;
+		GLint u_LHcubemap;
 
+		GLuint LHtexture;
 		GLuint vao, vbo;
 		int vertices;
 
@@ -66,6 +68,8 @@ static int initScene(scene_t *scene)
 	scene->mesh.coefficients[6] = m_vec3{-0.0445019, -0.06456, -0.0479999};
 	scene->mesh.coefficients[7] = m_vec3{0.036427, -0.21701, -0.410711};
 	scene->mesh.coefficients[8] = m_vec3{0.114988, 0.113818, 0.116976};
+
+	scene->mesh.LHtexture = buildLHcubemap();
 
 	// mesh
 	//yo_scene *yo = yo_load_obj("sphere.obj", true, false);
@@ -127,7 +131,7 @@ static int initScene(scene_t *scene)
 
 	const char *vp = R"(
 
-#version 150 core
+#version 410 core
 in vec3 a_position;
 in vec3 a_normal;
 uniform mat4 u_view;
@@ -143,10 +147,11 @@ void main()
 )";
 
 	const char *fp = R"(
-#version 150 core
+#version 410 core
 in vec3 v_normal;
 uniform vec3 u_coefficients[9];
 out vec4 o_color;
+uniform samplerCubeArray u_LHcubemap;
 
 // TODO: windowing
 
@@ -158,20 +163,28 @@ void main()
 // dot with L_H(N)
     vec3 n = normalize(v_normal);
     vec3 SHLightResult[9];
-    SHLightResult[0] = 0.282095f * u_coefficients[0];
-    SHLightResult[1] = 2.0/3 * -0.488603f * n.y * u_coefficients[1];
-    SHLightResult[2] = 2.0/3 * 0.488603f * n.z * u_coefficients[2];
-    SHLightResult[3] = 2.0/3 * -0.488603f * n.x * u_coefficients[3];
-    SHLightResult[4] = 1.0/4 * 1.092548f * n.x * n.y * u_coefficients[4];
-    SHLightResult[5] = 1.0/4 * -1.092548f * n.y * n.z * u_coefficients[5];
-    SHLightResult[6] = 1.0/4 * 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];
-    SHLightResult[7] = 1.0/4 * -1.092548f * n.x * n.z * u_coefficients[7];
-    SHLightResult[8] = 1.0/4 * 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];
+    // SHLightResult[0] = 0.282095f * u_coefficients[0];
+    // SHLightResult[1] = 2.0/3 * -0.488603f * n.y * u_coefficients[1];
+    // SHLightResult[2] = 2.0/3 * 0.488603f * n.z * u_coefficients[2];
+    // SHLightResult[3] = 2.0/3 * -0.488603f * n.x * u_coefficients[3];
+    // SHLightResult[4] = 1.0/4 * 1.092548f * n.x * n.y * u_coefficients[4];
+    // SHLightResult[5] = 1.0/4 * -1.092548f * n.y * n.z * u_coefficients[5];
+    // SHLightResult[6] = 1.0/4 * 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];
+    // SHLightResult[7] = 1.0/4 * -1.092548f * n.x * n.z * u_coefficients[7];
+    // SHLightResult[8] = 1.0/4 * 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];
     // H is PI times coefficients above, but brdf is reflectance / PI
-    vec3 result = vec3(0.0);
-    for (int i = 0; i < 9; ++i)
-        result += SHLightResult[i];
-    result = 0.8 * result; // reflectance
+
+    // for (int i=0; i<9; ++i)
+	   //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
+
+    // vec3 result = vec3(0.0);
+    // for (int i = 0; i < 9; ++i)
+    //     result += SHLightResult[i];
+
+    vec3 result = 3.5449075 * texture(u_LHcubemap, vec4(n,0)).rgb;
+    // yields the integral of LH
+    
+    result = 0.8 / 3.1416 * result; // reflectance
     float gamma = 2.2;
     result = max(result, 0.0);
     result = pow(result, vec3(1.0/gamma));
@@ -188,6 +201,7 @@ void main()
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");
 	scene->mesh.u_projection = glGetUniformLocation(scene->mesh.program, "u_projection");
 	scene->mesh.u_coefficients = glGetUniformLocation(scene->mesh.program, "u_coefficients");
+	scene->mesh.u_LHcubemap = glGetUniformLocation(scene->mesh.program, "u_LHcubemap");
 
 	return 1;
 }
@@ -205,6 +219,8 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
 	glUniform3fv(scene->mesh.u_coefficients, 9, &scene->mesh.coefficients[0].x);
+	glUniform1i(scene->mesh.u_LHcubemap, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, scene->mesh.LHtexture);
 	glBindVertexArray(scene->mesh.vao);
 	glDrawArrays(GL_TRIANGLES, 0, scene->mesh.vertices);
 }
@@ -215,6 +231,7 @@ static void destroyScene(scene_t *scene)
 	glDeleteProgram(scene->mesh.program);
 	glDeleteVertexArrays(1, &scene->mesh.vao);
 	glDeleteBuffers(1, &scene->mesh.vbo);
+	glDeleteTextures(1, &scene->mesh.LHtexture);
 }
 
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)

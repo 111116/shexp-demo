@@ -5,7 +5,7 @@
 - [ ] sphere hierachy
 - [ ] receiver point clustering
 - [ ] blocker selection & ratio vector
-- [ ] L*H(N) cubemap (w/ windowing)
+- [X] L*H(N) cubemap (w/ windowing)
 - [ ] shlog table
 - [ ] sh rotation
 - [ ] shexp
