@@ -160,19 +160,8 @@ void main()
 // for all sphere blockers
 // calculate angle & rotation
 // accumulate log(occu)
-// dot with L_H(N)
     vec3 n = normalize(v_normal);
     vec3 SHLightResult[9];
-    // SHLightResult[0] = 0.282095f * u_coefficients[0];
-    // SHLightResult[1] = 2.0/3 * -0.488603f * n.y * u_coefficients[1];
-    // SHLightResult[2] = 2.0/3 * 0.488603f * n.z * u_coefficients[2];
-    // SHLightResult[3] = 2.0/3 * -0.488603f * n.x * u_coefficients[3];
-    // SHLightResult[4] = 1.0/4 * 1.092548f * n.x * n.y * u_coefficients[4];
-    // SHLightResult[5] = 1.0/4 * -1.092548f * n.y * n.z * u_coefficients[5];
-    // SHLightResult[6] = 1.0/4 * 0.315392f * (3.0f * n.z * n.z - 1.0f) * u_coefficients[6];
-    // SHLightResult[7] = 1.0/4 * -1.092548f * n.x * n.z * u_coefficients[7];
-    // SHLightResult[8] = 1.0/4 * 0.546274f * (n.x * n.x - n.y * n.y) * u_coefficients[8];
-    // H is PI times coefficients above, but brdf is reflectance / PI
 
     // for (int i=0; i<9; ++i)
 	   //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
@@ -182,9 +171,11 @@ void main()
     //     result += SHLightResult[i];
 
     vec3 result = 3.5449075 * texture(u_LHcubemap, vec4(n,0)).rgb;
-    // yields the integral of LH
+    // L_H dot product with SH_one, yields the integral of L_H
+
+    result = 0.8 / 3.1416 * result; // times brdf
     
-    result = 0.8 / 3.1416 * result; // reflectance
+    // gamma correction
     float gamma = 2.2;
     result = max(result, 0.0);
     result = pow(result, vec3(1.0/gamma));
