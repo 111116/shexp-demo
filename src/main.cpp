@@ -35,7 +35,7 @@ extern "C"
 #include "s_shader.h"
 
 #include "consolelog.hpp"
-#include "sh.hpp"
+#include "sh/sh.hpp"
 #include "LHcubemap.hpp"
 
 typedef struct

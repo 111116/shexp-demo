@@ -66,6 +66,7 @@ void calculate_LHcubemap(float* data, const int size)
 
 GLuint buildLHcubemap()
 {
+	console.log("building cubemap L_H(N)...");
 	const int size = 128;
 	float *data = new float[N_COEFFS*6*size*size*3];
 
