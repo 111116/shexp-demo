@@ -37,6 +37,8 @@ extern "C"
 #include "consolelog.hpp"
 #include "sh/sh.hpp"
 #include "LHcubemap.hpp"
+#include "loadlut.hpp"
+#include "display_texture.hpp"
 
 typedef struct
 {
@@ -46,7 +48,7 @@ typedef struct
 		GLint u_view;
 		GLint u_projection;
 		GLint u_coefficients;
-		GLint u_LHcubemap;
+		// GLint u_LHcubemap;
 
 		GLuint LHtexture;
 		GLuint vao, vbo;
@@ -69,7 +71,8 @@ static int initScene(scene_t *scene)
 	scene->mesh.coefficients[7] = m_vec3{0.036427, -0.21701, -0.410711};
 	scene->mesh.coefficients[8] = m_vec3{0.114988, 0.113818, 0.116976};
 
-	scene->mesh.LHtexture = buildLHcubemap();
+	buildLHcubemap();
+	loadlut(3);
 
 	// mesh
 	//yo_scene *yo = yo_load_obj("sphere.obj", true, false);
@@ -147,6 +150,7 @@ void main()
 )";
 
 	const char *fp = R"(
+
 #version 410 core
 in vec3 v_normal;
 uniform vec3 u_coefficients[9];
@@ -165,6 +169,14 @@ void main()
 
     // for (int i=0; i<9; ++i)
 	   //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
+  //   logv;
+  //   for (int i=0; i<nspheres; ++i) {
+  //   	vec3 distv = world_position - u_position[i];
+  //   	float dist = length(distv);
+		// float angle = asin(u_radius[i] / dist);
+		// t = texture()
+	 //    add(logv, rotate(t, normalize(distv));
+  //   }
 
     // vec3 result = vec3(0.0);
     // for (int i = 0; i < 9; ++i)
@@ -181,6 +193,7 @@ void main()
     result = pow(result, vec3(1.0/gamma));
     o_color = vec4(result, 1.0);
 }
+
 )";
 
 	scene->mesh.program = s_loadProgram(vp, fp, attribs, 2);
@@ -192,7 +205,6 @@ void main()
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");
 	scene->mesh.u_projection = glGetUniformLocation(scene->mesh.program, "u_projection");
 	scene->mesh.u_coefficients = glGetUniformLocation(scene->mesh.program, "u_coefficients");
-	scene->mesh.u_LHcubemap = glGetUniformLocation(scene->mesh.program, "u_LHcubemap");
 
 	return 1;
 }
@@ -210,8 +222,11 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
 	glUniform3fv(scene->mesh.u_coefficients, 9, &scene->mesh.coefficients[0].x);
-	glUniform1i(scene->mesh.u_LHcubemap, 0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, scene->mesh.LHtexture);
+	// textures
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
+	// vertices
 	glBindVertexArray(scene->mesh.vao);
 	glDrawArrays(GL_TRIANGLES, 0, scene->mesh.vertices);
 }
@@ -281,6 +296,7 @@ static void error_callback(int error, const char *description)
 
 int main(int argc, char* argv[])
 {
+	try {
 	glfwSetErrorCallback(error_callback);
 	if (!glfwInit()) return 1;
 	glfwWindowHint(GLFW_RED_BITS, 8);
@@ -309,6 +325,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "Could not initialize scene.\n");
 		return 1;
 	}
+	display_texture::init();
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -344,7 +361,8 @@ int main(int argc, char* argv[])
 		float view[16], projection[16];
 		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
 		m_perspective44(projection, 45.0f, (float)w / (float)h, 0.01f, 100.0f);
-		drawScene(&scene, view, projection);
+		// drawScene(&scene, view, projection);
+		display_texture::draw();
 
 		ImGui::Render();
 		glfwSwapBuffers(window);
@@ -354,5 +372,9 @@ int main(int argc, char* argv[])
 	ImGui_ImplGlfwGL3_Shutdown();
 	glfwDestroyWindow(window);
 	glfwTerminate();
-	return 0;
+	}
+	catch (const char* e) {
+		console.error(e);
+		return 1;
+	}
 }
