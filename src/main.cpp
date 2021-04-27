@@ -58,9 +58,20 @@ typedef struct
 	} mesh;
 } scene_t;
 
-static int initScene(scene_t *scene)
-{
 
+std::string readfile(const char filename[]) {
+	std::stringstream sstream;
+	sstream << std::ifstream(filename).rdbuf();
+	if (!sstream)
+		throw "file not found";
+	std::string sourceString = sstream.str();
+	return sourceString;
+}
+
+
+static void initScene(scene_t *scene)
+{
+	// light probe @ SH order 3
 	scene->mesh.coefficients[0] = m_vec3{0.735427, 0.613381, 0.58883};
 	scene->mesh.coefficients[1] = m_vec3{0.102978, 0.138365, 0.166129};
 	scene->mesh.coefficients[2] = m_vec3{0.508975, 0.420545, 0.433161};
@@ -75,13 +86,9 @@ static int initScene(scene_t *scene)
 	loadlut(3);
 
 	// mesh
-	//yo_scene *yo = yo_load_obj("sphere.obj", true, false);
 	yo_scene *yo = yo_load_obj("../res/ball.obj", true, false);
 	if (!yo || !yo->nshapes)
-	{
-		fprintf(stderr, "Error loading obj file\n");
-		return 0;
-	}
+		throw "Error loading obj file";
 
 	scene->mesh.vertices = 0;
 	for (int i = 0; i < yo->nshapes; i++)
@@ -131,82 +138,12 @@ static int initScene(scene_t *scene)
 		"a_position",
 		"a_normal"
 	};
-
-	const char *vp = R"(
-
-#version 410 core
-in vec3 a_position;
-in vec3 a_normal;
-uniform mat4 u_view;
-uniform mat4 u_projection;
-out vec3 v_normal;
-
-void main()
-{
-    gl_Position = u_projection * (u_view * vec4(a_position, 1.0));
-    v_normal = a_normal;
-}
-
-)";
-
-	const char *fp = R"(
-
-#version 410 core
-in vec3 v_normal;
-uniform vec3 u_coefficients[9];
-out vec4 o_color;
-uniform samplerCubeArray u_LHcubemap;
-
-// TODO: windowing
-
-void main()
-{
-// for all sphere blockers
-// calculate angle & rotation
-// accumulate log(occu)
-    vec3 n = normalize(v_normal);
-    vec3 SHLightResult[9];
-
-    // for (int i=0; i<9; ++i)
-	   //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
-  //   logv;
-  //   for (int i=0; i<nspheres; ++i) {
-  //   	vec3 distv = world_position - u_position[i];
-  //   	float dist = length(distv);
-		// float angle = asin(u_radius[i] / dist);
-		// t = texture()
-	 //    add(logv, rotate(t, normalize(distv));
-  //   }
-
-    // vec3 result = vec3(0.0);
-    // for (int i = 0; i < 9; ++i)
-    //     result += SHLightResult[i];
-
-    vec3 result = 3.5449075 * texture(u_LHcubemap, vec4(n,0)).rgb;
-    // L_H dot product with SH_one, yields the integral of L_H
-
-    result = 0.8 / 3.1416 * result; // times brdf
-    
-    // gamma correction
-    float gamma = 2.2;
-    result = max(result, 0.0);
-    result = pow(result, vec3(1.0/gamma));
-    o_color = vec4(result, 1.0);
-}
-
-)";
-
-	scene->mesh.program = s_loadProgram(vp, fp, attribs, 2);
+	scene->mesh.program = s_loadProgram(readfile("../res/vert.glsl").c_str(), readfile("../res/frag.glsl").c_str(), attribs, 2);
 	if (!scene->mesh.program)
-	{
-		fprintf(stderr, "Error loading mesh shader\n");
-		return 0;
-	}
+		throw "Error loading mesh shader";
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");
 	scene->mesh.u_projection = glGetUniformLocation(scene->mesh.program, "u_projection");
 	scene->mesh.u_coefficients = glGetUniformLocation(scene->mesh.program, "u_coefficients");
-
-	return 1;
 }
 
 static void drawScene(scene_t *scene, float *view, float *projection)
@@ -239,6 +176,92 @@ static void destroyScene(scene_t *scene)
 	glDeleteBuffers(1, &scene->mesh.vbo);
 	glDeleteTextures(1, &scene->mesh.LHtexture);
 }
+
+static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput);
+
+static void error_callback(int error, const char *description)
+{
+	fprintf(stderr, "Error: %s\n", description);
+}
+
+int main(int argc, char* argv[])
+{
+	try {
+	glfwSetErrorCallback(error_callback);
+	if (!glfwInit()) return 1;
+	glfwWindowHint(GLFW_RED_BITS, 8);
+	glfwWindowHint(GLFW_GREEN_BITS, 8);
+	glfwWindowHint(GLFW_BLUE_BITS, 8);
+	glfwWindowHint(GLFW_ALPHA_BITS, 8);
+	glfwWindowHint(GLFW_DEPTH_BITS, 32);
+	glfwWindowHint(GLFW_STENCIL_BITS, GLFW_DONT_CARE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	GLFWwindow *window = glfwCreateWindow(1280, 800, "Spherical Harmonics Playground", NULL, NULL);
+	if (!window) return 1;
+	glfwMakeContextCurrent(window);
+	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	glfwSwapInterval(1);
+
+	ImGui_ImplGlfwGL3_Init(window, true);
+
+	scene_t scene = {0};
+	initScene(&scene);
+	// display_texture::init();
+
+	while (!glfwWindowShouldClose(window))
+	{
+		glfwPollEvents();
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			destroyScene(&scene);
+			initScene(&scene);
+		}
+		ImGui_ImplGlfwGL3_NewFrame();
+
+		ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiSetCond_FirstUseEver);
+		static bool show_another_window = true;
+		ImGui::Begin("Coefficients", &show_another_window);
+		for (int i = 0; i < 9; i++)
+		{
+			char name[] = "[?]";
+			name[1] = i + '0';
+			m_vec3 remapped = m_scale3(m_add3(scene.mesh.coefficients[i], m_v3(1.0f, 1.0f, 1.0f)), 0.5f);
+			ImGui::ColorEdit3(name, &remapped.x);
+			scene.mesh.coefficients[i] = m_sub3(m_scale3(remapped, 2.0f), m_v3(1.0f, 1.0f, 1.0f));
+		}
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
+
+		int w, h;
+		glfwGetFramebufferSize(window, &w, &h);
+		glViewport(0, 0, w, h);
+		float view[16], projection[16];
+		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
+		m_perspective44(projection, 45.0f, (float)w / (float)h, 0.01f, 100.0f);
+		drawScene(&scene, view, projection);
+		// display_texture::draw();
+
+		ImGui::Render();
+		glfwSwapBuffers(window);
+	}
+
+	destroyScene(&scene);
+	ImGui_ImplGlfwGL3_Shutdown();
+	glfwDestroyWindow(window);
+	glfwTerminate();
+	}
+	catch (const char* e) {
+		console.error(e);
+		return 1;
+	}
+}
+
+
 
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
@@ -287,94 +310,4 @@ static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInpu
 	m_transpose44(inverseRotation, rotationYX);
 	m_translation44(inverseTranslation, -position[0], -position[1], -position[2]);
 	m_mul44(view, inverseRotation, inverseTranslation); // = inverse(translation(position) * rotationYX);
-}
-
-static void error_callback(int error, const char *description)
-{
-	fprintf(stderr, "Error: %s\n", description);
-}
-
-int main(int argc, char* argv[])
-{
-	try {
-	glfwSetErrorCallback(error_callback);
-	if (!glfwInit()) return 1;
-	glfwWindowHint(GLFW_RED_BITS, 8);
-	glfwWindowHint(GLFW_GREEN_BITS, 8);
-	glfwWindowHint(GLFW_BLUE_BITS, 8);
-	glfwWindowHint(GLFW_ALPHA_BITS, 8);
-	glfwWindowHint(GLFW_DEPTH_BITS, 32);
-	glfwWindowHint(GLFW_STENCIL_BITS, GLFW_DONT_CARE);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	GLFWwindow *window = glfwCreateWindow(1280, 800, "Spherical Harmonics Playground", NULL, NULL);
-	if (!window) return 1;
-	glfwMakeContextCurrent(window);
-	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	glfwSwapInterval(1);
-
-	ImGui_ImplGlfwGL3_Init(window, true);
-
-	scene_t scene = {0};
-	if (!initScene(&scene))
-	{
-		fprintf(stderr, "Could not initialize scene.\n");
-		return 1;
-	}
-	display_texture::init();
-
-	while (!glfwWindowShouldClose(window))
-	{
-		glfwPollEvents();
-		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-		{
-			destroyScene(&scene);
-			if (!initScene(&scene))
-			{
-				fprintf(stderr, "Could not reinitialize scene.\n");
-				break;
-			}
-		}
-		ImGui_ImplGlfwGL3_NewFrame();
-
-		ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiSetCond_FirstUseEver);
-		static bool show_another_window = true;
-		ImGui::Begin("Coefficients", &show_another_window);
-		for (int i = 0; i < 9; i++)
-		{
-			char name[] = "[?]";
-			name[1] = i + '0';
-			m_vec3 remapped = m_scale3(m_add3(scene.mesh.coefficients[i], m_v3(1.0f, 1.0f, 1.0f)), 0.5f);
-			ImGui::ColorEdit3(name, &remapped.x);
-			scene.mesh.coefficients[i] = m_sub3(m_scale3(remapped, 2.0f), m_v3(1.0f, 1.0f, 1.0f));
-		}
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-
-		int w, h;
-		glfwGetFramebufferSize(window, &w, &h);
-		glViewport(0, 0, w, h);
-		float view[16], projection[16];
-		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
-		m_perspective44(projection, 45.0f, (float)w / (float)h, 0.01f, 100.0f);
-		// drawScene(&scene, view, projection);
-		display_texture::draw();
-
-		ImGui::Render();
-		glfwSwapBuffers(window);
-	}
-
-	destroyScene(&scene);
-	ImGui_ImplGlfwGL3_Shutdown();
-	glfwDestroyWindow(window);
-	glfwTerminate();
-	}
-	catch (const char* e) {
-		console.error(e);
-		return 1;
-	}
 }
