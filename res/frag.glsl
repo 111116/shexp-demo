@@ -1,26 +1,30 @@
 #version 410 core
-in vec3 v_normal;
-uniform vec3 u_coefficients[9];
-out vec4 o_color;
-uniform samplerCubeArray u_LHcubemap;
+
 
 #define PI (3.14159265359)
 
 #define N 9
 
+
+in vec3 v_normal;
+out vec4 o_color;
+uniform vec3 u_coefficients[9];
+uniform samplerCubeArray u_LHcubemap;
+uniform vec4 u_sphere[30]; // vec4(position, radius)
+
 // TODO: windowing
 
 float[N] shexp(float[N] f)
 {
-	// naive linear
-	float[9] g;
-	float e = exp(f[0]/sqrt(4.0/PI));
-	g[0] = sqrt(4.0*PI)*e;
-	for (int i = 1; i < N; i++)
-	{
-		g[i] = f[i]*e;
-	}
-	return g;
+    // naive linear
+    float[9] g;
+    float e = exp(f[0]/sqrt(4.0/PI));
+    g[0] = sqrt(4.0*PI)*e;
+    for (int i = 1; i < N; i++)
+    {
+        g[i] = f[i]*e;
+    }
+    return g;
 }
 
 void main()
@@ -32,14 +36,14 @@ void main()
     vec3 SHLightResult[9];
 
     // for (int i=0; i<9; ++i)
-	   //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
+       //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
   //   logv;
   //   for (int i=0; i<nspheres; ++i) {
-  //   	vec3 distv = world_position - u_position[i];
-  //   	float dist = length(distv);
-		// float angle = asin(u_radius[i] / dist);
-		// t = texture()
-	 //    add(logv, rotate(t, normalize(distv));
+  //    vec3 distv = world_position - u_position[i];
+  //    float dist = length(distv);
+        // float angle = asin(u_radius[i] / dist);
+        // t = texture()
+     //    add(logv, rotate(t, normalize(distv));
   //   }
 
     // vec3 result = vec3(0.0);

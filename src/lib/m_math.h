@@ -78,6 +78,9 @@ static inline float   m_length3   (m_vec3 a          ) { return sqrtf(m_length3s
 static inline m_vec3  m_normalize3(m_vec3 a          ) { return m_div3(a, m_length3(a)); }
 static inline m_bool  m_finite3   (m_vec3 a          ) { return m_finite(a.x) && m_finite(a.y) && m_finite(a.z); }
 
+typedef struct m_vec4 { float x, y, z, w; } m_vec4;
+
+
 #define M_M_PI 3.14159265358979323846f
 
 static void m_mul44(float *out, float *a, float *b)

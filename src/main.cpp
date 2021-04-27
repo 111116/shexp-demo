@@ -40,6 +40,7 @@ extern "C"
 #include "loadlut.hpp"
 #include "display_texture.hpp"
 
+
 typedef struct
 {
 	struct
@@ -55,6 +56,7 @@ typedef struct
 		int vertices;
 
 		m_vec3 coefficients[9];
+		m_vec4 sphere[30];
 	} mesh;
 } scene_t;
 
@@ -82,11 +84,20 @@ static void initScene(scene_t *scene)
 	scene->mesh.coefficients[7] = m_vec3{0.036427, -0.21701, -0.410711};
 	scene->mesh.coefficients[8] = m_vec3{0.114988, 0.113818, 0.116976};
 
+	// load spheres
+	std::ifstream fin1("../res/spheres");
+	if (!fin1) throw "cannot load spheres";
+	for (int i=0; i<30; ++i) {
+		float x,y,z,r;
+		fin1 >> x >> y >> z >> r;
+		scene->mesh.sphere[i] = m_vec4{x,y,z,r};
+	}
+
 	buildLHcubemap();
 	loadlut(3);
 
 	// mesh
-	yo_scene *yo = yo_load_obj("../res/ball.obj", true, false);
+	yo_scene *yo = yo_load_obj("../res/hifreq_scene.obj", true, false);
 	if (!yo || !yo->nshapes)
 		throw "Error loading obj file";
 
@@ -159,6 +170,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
 	glUniform3fv(scene->mesh.u_coefficients, 9, &scene->mesh.coefficients[0].x);
+	glUniform4fv(glGetUniformLocation(scene->mesh.program, "u_sphere"), 30, &scene->mesh.sphere[0].x);
 	// textures
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
@@ -266,8 +278,8 @@ int main(int argc, char* argv[])
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	static float position[] = { 0.0f, 0.5f, 3.0f };
-	static float rotation[] = { 0.0f, 0.0f };
+	static float position[] = { 0.0f, 1.2f, 4.0f };
+	static float rotation[] = { -10.0f, 0.0f };
 
 	// mouse look
 	static double lastMouse[] = { 0.0, 0.0 };
