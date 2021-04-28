@@ -61,6 +61,11 @@ vec3 shdot(float[N] a, vec3[N] b)
     return s;
 }
 
+float sqr(float a)
+{
+    return a*a;
+}
+
 void main()
 {
 // for all sphere blockers
@@ -71,35 +76,40 @@ void main()
 
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 
-    // for (int i=0; i<30; ++i) {
-    //     vec3 v = u_sphere[i].xyz - position;
-    //     float dist = length(v);
-    //     float angle = asin(u_sphere[i].w / dist);
-    //     float[sh_order] cur_symmlog;
-    //     for (int l=0; l<sh_order; ++l)
-    //         cur_symmlog[l] = texture(u_log_lut, vec2((l+0.5)/sh_order, angle/(PI/2))).x;
-    //     float[N] cur_log = rotate(cur_symmlog, normalize(v));
-    //     for (int j=0; j<N; ++j)
-    //         f[j] += cur_log[j];
-    // }
+    for (int i=0; i<30; ++i) {
+        vec3 center = u_sphere[i].xyz;
+        float radius = u_sphere[i].w;
+        vec3 v = center - position;
+        float dist = length(v);
+        // avoid self-shadowing
+        float proj_dist = dot(v, n);
+        // eliminate spheres that are completely behind surface
+        if (proj_dist + radius <= 0) continue;
+        // eliminate spheres covering p with centers behind surface
+        if (dist < radius + 1e-5 && proj_dist <= 0) continue;
+        // make spheres not go behind tangent surface
+        if (-radius <= proj_dist && proj_dist <= radius) {
+            vec3 q0 = center + radius*n;
+            vec3 q1 = center - proj_dist*n;
+            radius = (radius + proj_dist)/2;
+            v = (q0+q1)/2 - position;
+            float d = sqrt(sqr(radius) - sqr(radius-length(q1-q0)));
+            float alpha = min(1.0, (length(position-q1)-d)/d);
+            if (alpha <= 0) continue;
+            radius *= alpha;
+        }
+
+        float angle = asin(radius / dist);
+        // look up log(visibility) of corresponding angle
+        float[sh_order] cur_symmlog;
+        for (int l=0; l<sh_order; ++l)
+            cur_symmlog[l] = texture(u_log_lut, vec2((l+0.5)/sh_order, angle/(PI/2))).x;
+        float[N] cur_log = rotate(cur_symmlog, normalize(v));
+        for (int j=0; j<N; ++j)
+            f[j] += cur_log[j];
+    }
     float[N] g = shexp(f);
 
-    // for (int i=0; i<9; ++i)
-       //  SHLightResult[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
-  //   logv;
-  //   for (int i=0; i<nspheres; ++i) {
-  //    vec3 distv = position - u_position[i];
-  //    float dist = length(distv);
-        // float angle = asin(u_radius[i] / dist);
-        // t = texture()
-     //    add(logv, rotate(t, normalize(distv));
-  //   }
-
-    // vec3 result = vec3(0.0);
-    // for (int i = 0; i < 9; ++i)
-    //     result += SHLightResult[i];
-
-    // vec3 result = 3.5449075 * texture(u_LHcubemap, vec4(n,0)).rgb;
     vec3 LH[N];
     for (int i = 0; i < 9; ++i)
         LH[i] = texture(u_LHcubemap, vec4(n,i)).rgb;

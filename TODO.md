@@ -3,11 +3,11 @@
 - [x] framework
 - [x] sphere set approximation
 - [ ] sphere hierachy
-- [ ] avoid self-shadowing
+- [x] avoid self-shadowing
 - [ ] receiver point clustering
 - [ ] blocker selection & ratio vector
 - [X] L*H(N) cubemap (w/ windowing)
-- [ ] shlog table
-- [ ] sh rotation
+- [x] shlog table
+- [x] sh rotation
 - [ ] shexp
 
