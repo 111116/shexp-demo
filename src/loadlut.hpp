@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -40,3 +42,4 @@ void loadlut(int n)
 	glActiveTexture(GL_TEXTURE2);
 	createFloat2DTexture(2, n_entry, ab_lut);
 }
+

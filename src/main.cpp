@@ -38,6 +38,7 @@ extern "C"
 #include "sh/sh.hpp"
 #include "LHcubemap.hpp"
 #include "loadlut.hpp"
+#include "shlut.hpp"
 #include "display_texture.hpp"
 
 
@@ -95,6 +96,7 @@ static void initScene(scene_t *scene)
 
 	buildLHcubemap();
 	loadlut(3);
+	build_sh_lut();
 
 	// mesh
 	yo_scene *yo = yo_load_obj("../res/hifreq_scene.obj", true, false);
@@ -173,6 +175,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform4fv(glGetUniformLocation(scene->mesh.program, "u_sphere"), 30, &scene->mesh.sphere[0].x);
 	// textures
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sh_lut"), 3);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	// vertices
