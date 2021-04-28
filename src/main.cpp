@@ -49,14 +49,12 @@ typedef struct
 		GLuint program;
 		GLint u_view;
 		GLint u_projection;
-		GLint u_coefficients;
 		// GLint u_LHcubemap;
 
 		GLuint LHtexture;
 		GLuint vao, vbo;
 		int vertices;
 
-		m_vec3 coefficients[9];
 		m_vec4 sphere[30];
 	} mesh;
 } scene_t;
@@ -74,17 +72,6 @@ std::string readfile(const char filename[]) {
 
 static void initScene(scene_t *scene)
 {
-	// light probe @ SH order 3
-	scene->mesh.coefficients[0] = m_vec3{0.735427, 0.613381, 0.58883};
-	scene->mesh.coefficients[1] = m_vec3{0.102978, 0.138365, 0.166129};
-	scene->mesh.coefficients[2] = m_vec3{0.508975, 0.420545, 0.433161};
-	scene->mesh.coefficients[3] = m_vec3{-0.0336926, -0.254128, -0.414039};
-	scene->mesh.coefficients[4] = m_vec3{0.00985182, -0.113192, -0.184917};
-	scene->mesh.coefficients[5] = m_vec3{0.103119, 0.141603, 0.168878};
-	scene->mesh.coefficients[6] = m_vec3{-0.0445019, -0.06456, -0.0479999};
-	scene->mesh.coefficients[7] = m_vec3{0.036427, -0.21701, -0.410711};
-	scene->mesh.coefficients[8] = m_vec3{0.114988, 0.113818, 0.116976};
-
 	// load spheres
 	std::ifstream fin1("../res/spheres");
 	if (!fin1) throw "cannot load spheres";
@@ -94,7 +81,7 @@ static void initScene(scene_t *scene)
 		scene->mesh.sphere[i] = m_vec4{x,y,z,r};
 	}
 
-	buildLHcubemap();
+	buildLHcubemap("../res/pisa.shrgb");
 	loadlut(3);
 	build_sh_lut();
 
@@ -156,7 +143,6 @@ static void initScene(scene_t *scene)
 		throw "Error loading mesh shader";
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");
 	scene->mesh.u_projection = glGetUniformLocation(scene->mesh.program, "u_projection");
-	scene->mesh.u_coefficients = glGetUniformLocation(scene->mesh.program, "u_coefficients");
 }
 
 static void drawScene(scene_t *scene, float *view, float *projection)
@@ -171,7 +157,6 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUseProgram(scene->mesh.program);
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
-	glUniform3fv(scene->mesh.u_coefficients, 9, &scene->mesh.coefficients[0].x);
 	glUniform4fv(glGetUniformLocation(scene->mesh.program, "u_sphere"), 30, &scene->mesh.sphere[0].x);
 	// textures
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
@@ -216,7 +201,7 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	GLFWwindow *window = glfwCreateWindow(1280, 800, "Spherical Harmonics Playground", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(800, 800, "Spherical Harmonics Playground", NULL, NULL);
 	if (!window) return 1;
 	glfwMakeContextCurrent(window);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -241,14 +226,14 @@ int main(int argc, char* argv[])
 		ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiSetCond_FirstUseEver);
 		static bool show_another_window = true;
 		ImGui::Begin("Coefficients", &show_another_window);
-		for (int i = 0; i < 9; i++)
-		{
-			char name[] = "[?]";
-			name[1] = i + '0';
-			m_vec3 remapped = m_scale3(m_add3(scene.mesh.coefficients[i], m_v3(1.0f, 1.0f, 1.0f)), 0.5f);
-			ImGui::ColorEdit3(name, &remapped.x);
-			scene.mesh.coefficients[i] = m_sub3(m_scale3(remapped, 2.0f), m_v3(1.0f, 1.0f, 1.0f));
-		}
+		// for (int i = 0; i < 9; i++)
+		// {
+		// 	char name[] = "[?]";
+		// 	name[1] = i + '0';
+		// 	m_vec3 remapped = m_scale3(m_add3(scene.mesh.coefficients[i], m_v3(1.0f, 1.0f, 1.0f)), 0.5f);
+		// 	ImGui::ColorEdit3(name, &remapped.x);
+		// 	scene.mesh.coefficients[i] = m_sub3(m_scale3(remapped, 2.0f), m_v3(1.0f, 1.0f, 1.0f));
+		// }
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
@@ -281,8 +266,8 @@ int main(int argc, char* argv[])
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	static float position[] = { 0.0f, 1.2f, 4.0f };
-	static float rotation[] = { -10.0f, 0.0f };
+	static float position[] = { 1.0f, 1.2f, 4.0f };
+	static float rotation[] = { -10.0f, 15.0f };
 
 	// mouse look
 	static double lastMouse[] = { 0.0, 0.0 };

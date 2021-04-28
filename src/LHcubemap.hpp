@@ -1,32 +1,29 @@
 #pragma once
 
-const int N_COEFFS = 9;
+const int shorder = 3;
+const int N_COEFFS = shorder * shorder;
 
 // cubemap stores SH projection of product of environment light L and cosine-weight function H at different direction
-void calculate_LHcubemap(float* data, const int size)
+void calculate_LHcubemap(const char* filename, float* data, const int size)
 // layout: SHindex, face, position, rgb
 {
-	assert(N_COEFFS == 9);
-	const int n = 3;
 	// load SH projection of environment light
-	vec3f L[9];
-	L[0] = vec3f(0.735427, 0.613381, 0.58883);
-	L[1] = vec3f(0.102978, 0.138365, 0.166129);
-	L[2] = vec3f(0.508975, 0.420545, 0.433161);
-	L[3] = vec3f(-0.0336926, -0.254128, -0.414039);
-	L[4] = vec3f(0.00985182, -0.113192, -0.184917);
-	L[5] = vec3f(0.103119, 0.141603, 0.168878);
-	L[6] = vec3f(-0.0445019, -0.06456, -0.0479999);
-	L[7] = vec3f(0.036427, -0.21701, -0.410711);
-	L[8] = vec3f(0.114988, 0.113818, 0.116976);
-	SH<n> L_r, L_g, L_b;
+	vec3f L[N_COEFFS];
+	std::ifstream fin(filename);
+	int _t;
+	fin >> _t;
+	if (_t < shorder) throw "shrgb order unmatch";
+	for (int i=0; i<N_COEFFS; ++i)
+		fin >> L[i];
+	// separate channels
+	SH<shorder> L_r, L_g, L_b;
 	for (int i=0; i<N_COEFFS; ++i) {
 		L_r.a[i] = L[i].x;
 		L_g.a[i] = L[i].y;
 		L_b.a[i] = L[i].z;
 	}
 	// SH-project cosine-weight function H
-	SymmSH<n> H([](float theta){return std::max(cos(theta), 0.0f);});
+	SymmSH<shorder> H([](float theta){return std::max(cos(theta), 0.0f);});
 
 	// calculate L*H(N) at different direction N
 	for (int i = 0; i < size; i++)
@@ -64,13 +61,13 @@ void calculate_LHcubemap(float* data, const int size)
 	}
 }
 
-GLuint buildLHcubemap()
+GLuint buildLHcubemap(const char* filename)
 {
 	console.log("building cubemap L_H(N)...");
 	const int size = 128;
 	float *data = new float[N_COEFFS*6*size*size*3];
 
-	calculate_LHcubemap(data, size);
+	calculate_LHcubemap(filename, data, size);
 	// create & bind a named texture
 	GLuint texture;
 	glGenTextures(1, &texture);

@@ -8,7 +8,7 @@
 
 
 in vec3 position; // world position (attribute interpolated)
-in vec3 normal; // world normal (attribute interpolated)
+in vec3 normal_interpolate; // world normal (attribute interpolated)
 out vec4 o_color;
 uniform vec3 u_coefficients[9]; // unused
 uniform samplerCubeArray u_LHcubemap; // (dir, SHindex(l,m)) => L*H(dir), where L is environment light and H is cosine-weighted hemisphere
@@ -71,7 +71,7 @@ void main()
 // for all sphere blockers
 // calculate angle & rotation
 // accumulate log(occu)
-    vec3 n = normalize(normal);
+    vec3 normal = normalize(normal_interpolate);
     // vec3 SHLightResult[N];
 
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
@@ -82,15 +82,15 @@ void main()
         vec3 v = center - position;
         float dist = length(v);
         // avoid self-shadowing
-        float proj_dist = dot(v, n);
+        float proj_dist = dot(v, normal);
         // eliminate spheres that are completely behind surface
         if (proj_dist + radius <= 0) continue;
         // eliminate spheres covering p with centers behind surface
         if (dist < radius + 1e-5 && proj_dist <= 0) continue;
         // make spheres not go behind tangent surface
         if (-radius <= proj_dist && proj_dist <= radius) {
-            vec3 q0 = center + radius*n;
-            vec3 q1 = center - proj_dist*n;
+            vec3 q0 = center + radius*normal;
+            vec3 q1 = center - proj_dist*normal;
             radius = (radius + proj_dist)/2;
             v = (q0+q1)/2 - position;
             float d = sqrt(sqr(radius) - sqr(radius-length(q1-q0)));
@@ -98,7 +98,6 @@ void main()
             if (alpha <= 0) continue;
             radius *= alpha;
         }
-
         float angle = asin(radius / dist);
         // look up log(visibility) of corresponding angle
         float[sh_order] cur_symmlog;
@@ -111,8 +110,8 @@ void main()
     float[N] g = shexp(f);
 
     vec3 LH[N];
-    for (int i = 0; i < 9; ++i)
-        LH[i] = texture(u_LHcubemap, vec4(n,i)).rgb;
+    for (int i = 0; i < N; ++i)
+        LH[i] = texture(u_LHcubemap, vec4(normal,i)).rgb;
     vec3 result = shdot(g, LH);
     // L_H dot product with SH_one, yields the integral of L_H
 

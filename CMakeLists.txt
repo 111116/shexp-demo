@@ -12,7 +12,7 @@ include_directories("src")
 include_directories("src/glfw/deps") # for glad
 include_directories("src/glfw/include")
 include_directories("src/lib")
-add_executable(${PROJECT_NAME} src/main.cpp src/glfw/deps/glad.c src/sh/sh.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/glfw/deps/glad.c src/sh/sh.cpp src/math/vecmath.cpp)
 if (MSVC)
     add_definitions( "-D _CRT_SECURE_NO_WARNINGS" )
 endif()
