@@ -76,29 +76,39 @@ void main()
 
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 
-    for (int i=0; i<0; ++i) {
+    for (int i=0; i<30; ++i) {
         vec3 center = u_sphere[i].xyz;
         float radius = u_sphere[i].w;
         vec3 v = center - position;
         float dist = length(v);
         // avoid self-shadowing
         float proj_dist = dot(v, normal);
-        // eliminate spheres that are completely behind surface
-        // if (proj_dist + radius <= 0) continue;
-        // // eliminate spheres covering p with centers behind surface
-        // if (dist < radius + 1e-5 && proj_dist <= 0) continue;
-        // // make spheres not go behind tangent surface
-        // if (-radius <= proj_dist && proj_dist <= radius) {
-        //     vec3 q0 = center + radius*normal;
-        //     vec3 q1 = center - proj_dist*normal;
-        //     radius = (radius + proj_dist)/2;
-        //     v = (q0+q1)/2 - position;
-        //     float d = sqrt(sqr(radius) - sqr(radius-length(q1-q0)));
-        //     float alpha = min(1.0, (length(position-q1)-d)/d);
-        //     if (alpha <= 0) continue;
-        //     radius *= alpha;
-        // }
-        float angle = asin(radius / dist);
+        // eliminate spheres that are completely behind tangent surface
+        // if (proj_dist + radius <= 0) {o_color = vec4(0,0.7,0,0); return;}
+        if (proj_dist + radius <= 0) continue;
+        // eliminate spheres covering p with centers behind tangent surface
+        // if (dist < radius + 1e-5 && proj_dist <= 0) {o_color = vec4(0,0.7,0,0); return;}
+        if (dist < radius + 1e-5 && proj_dist <= 0) continue;
+        // for spheres that pokes through tangent surface:
+        // make spheres not go behind tangent surface
+        if (-radius <= proj_dist && proj_dist <= radius) {
+            // if (dist < radius + 1e-5) {
+            //     o_color = vec4(0,0,1,0); return;
+            // }
+            vec3 q0 = center + radius*normal;
+            vec3 q1 = center - proj_dist*normal;
+            v = (q0+q1)/2 - position;
+            float d = sqrt(sqr(radius) - sqr(radius-length(q1-q0)));
+            radius = (radius + proj_dist)/2;
+            // apply a scaling factor to solve discontinuity
+            if (proj_dist <= 0) {
+                float alpha = min(1.0, (length(position-q1)-d)/d);
+                if (alpha <= 0) continue;
+                radius *= alpha;
+                // o_color = vec4(1,0,0,0); return; // DEBUG
+            }
+        }
+        float angle = asin(min(radius / dist,1));
         // look up log(visibility) of corresponding angle
         float[sh_order] cur_symmlog;
         for (int l=0; l<sh_order; ++l)
