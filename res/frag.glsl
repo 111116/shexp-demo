@@ -76,7 +76,7 @@ void main()
 
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 
-    for (int i=0; i<30; ++i) {
+    for (int i=0; i<0; ++i) {
         vec3 center = u_sphere[i].xyz;
         float radius = u_sphere[i].w;
         vec3 v = center - position;
@@ -84,20 +84,20 @@ void main()
         // avoid self-shadowing
         float proj_dist = dot(v, normal);
         // eliminate spheres that are completely behind surface
-        if (proj_dist + radius <= 0) continue;
-        // eliminate spheres covering p with centers behind surface
-        if (dist < radius + 1e-5 && proj_dist <= 0) continue;
-        // make spheres not go behind tangent surface
-        if (-radius <= proj_dist && proj_dist <= radius) {
-            vec3 q0 = center + radius*normal;
-            vec3 q1 = center - proj_dist*normal;
-            radius = (radius + proj_dist)/2;
-            v = (q0+q1)/2 - position;
-            float d = sqrt(sqr(radius) - sqr(radius-length(q1-q0)));
-            float alpha = min(1.0, (length(position-q1)-d)/d);
-            if (alpha <= 0) continue;
-            radius *= alpha;
-        }
+        // if (proj_dist + radius <= 0) continue;
+        // // eliminate spheres covering p with centers behind surface
+        // if (dist < radius + 1e-5 && proj_dist <= 0) continue;
+        // // make spheres not go behind tangent surface
+        // if (-radius <= proj_dist && proj_dist <= radius) {
+        //     vec3 q0 = center + radius*normal;
+        //     vec3 q1 = center - proj_dist*normal;
+        //     radius = (radius + proj_dist)/2;
+        //     v = (q0+q1)/2 - position;
+        //     float d = sqrt(sqr(radius) - sqr(radius-length(q1-q0)));
+        //     float alpha = min(1.0, (length(position-q1)-d)/d);
+        //     if (alpha <= 0) continue;
+        //     radius *= alpha;
+        // }
         float angle = asin(radius / dist);
         // look up log(visibility) of corresponding angle
         float[sh_order] cur_symmlog;
@@ -111,7 +111,7 @@ void main()
 
     vec3 LH[N];
     for (int i = 0; i < N; ++i)
-        LH[i] = texture(u_LHcubemap, vec4(normal,i)).rgb;
+        LH[i] = texture(u_LHcubemap, vec4(normal.xzy,i)).rgb;
     vec3 result = shdot(g, LH);
     // L_H dot product with SH_one, yields the integral of L_H
 
