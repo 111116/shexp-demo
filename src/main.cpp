@@ -180,7 +180,7 @@ static void destroyScene(scene_t *scene)
 }
 
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput);
-void saveImage(char* filepath, GLFWwindow* w);
+void saveImage(const char filepath[], GLFWwindow* w);
 
 static void error_callback(int error, const char *description)
 {
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
 		glViewport(0, 0, w, h);
 		float view[16], projection[16];
 		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
-		m_perspective44(projection, 45.0f, (float)w / (float)h, 0.01f, 100.0f);
+		m_perspective44(projection, 40.0f, (float)w / (float)h, 0.01f, 100.0f);
 		drawScene(&scene, view, projection);
 		// display_texture::draw();
 		ImGui::Render();
@@ -272,7 +272,7 @@ int main(int argc, char* argv[])
 
 
 
-void saveImage(char filepath[], GLFWwindow* w) {
+void saveImage(const char filepath[], GLFWwindow* w) {
 	int width, height;
 	glfwGetFramebufferSize(w, &width, &height);
 	GLsizei nrChannels = 3;
