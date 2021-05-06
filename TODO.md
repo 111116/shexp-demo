@@ -9,5 +9,5 @@
 - [X] L*H(N) cubemap (w/ windowing)
 - [x] shlog table
 - [x] sh rotation
-- [ ] shexp
+- [x] shexp
 

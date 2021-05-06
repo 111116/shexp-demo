@@ -6,6 +6,95 @@
 #define sh_order 3
 #define N 9
 
+struct TensorEntry
+{
+    int a,b,c;
+    float val;
+} sparse3[83] = TensorEntry[](
+TensorEntry(0,0,0,0.2820948064),
+TensorEntry(0,1,1,0.2820948064),
+TensorEntry(0,2,2,0.2820948064),
+TensorEntry(0,3,3,0.2820948064),
+TensorEntry(0,4,4,0.2820948064),
+TensorEntry(0,5,5,0.2820948064),
+TensorEntry(0,6,6,0.2820948064),
+TensorEntry(0,7,7,0.2820948064),
+TensorEntry(0,8,8,0.2820948064),
+TensorEntry(1,0,1,0.2820948064),
+TensorEntry(1,1,0,0.2820948064),
+TensorEntry(1,1,6,-0.1261566281),
+TensorEntry(1,1,8,-0.218509689),
+TensorEntry(1,2,5,0.218509689),
+TensorEntry(1,3,4,0.218509689),
+TensorEntry(1,4,3,0.218509689),
+TensorEntry(1,5,2,0.218509689),
+TensorEntry(1,6,1,-0.1261566281),
+TensorEntry(1,8,1,-0.218509689),
+TensorEntry(2,0,2,0.2820948064),
+TensorEntry(2,1,5,0.218509689),
+TensorEntry(2,2,0,0.2820948064),
+TensorEntry(2,2,6,0.2523132563),
+TensorEntry(2,3,7,0.218509689),
+TensorEntry(2,5,1,0.218509689),
+TensorEntry(2,6,2,0.2523132563),
+TensorEntry(2,7,3,0.218509689),
+TensorEntry(3,0,3,0.2820948064),
+TensorEntry(3,1,4,0.218509689),
+TensorEntry(3,2,7,0.218509689),
+TensorEntry(3,3,0,0.2820948064),
+TensorEntry(3,3,6,-0.1261566281),
+TensorEntry(3,3,8,0.218509689),
+TensorEntry(3,4,1,0.218509689),
+TensorEntry(3,6,3,-0.1261566281),
+TensorEntry(3,7,2,0.218509689),
+TensorEntry(3,8,3,0.218509689),
+TensorEntry(4,0,4,0.2820948064),
+TensorEntry(4,1,3,0.218509689),
+TensorEntry(4,3,1,0.218509689),
+TensorEntry(4,4,0,0.2820948064),
+TensorEntry(4,4,6,-0.1802237481),
+TensorEntry(4,5,7,0.1560783535),
+TensorEntry(4,6,4,-0.1802237481),
+TensorEntry(4,7,5,0.1560783535),
+TensorEntry(5,0,5,0.2820948064),
+TensorEntry(5,1,2,0.218509689),
+TensorEntry(5,2,1,0.218509689),
+TensorEntry(5,4,7,0.1560783535),
+TensorEntry(5,5,0,0.2820948064),
+TensorEntry(5,5,6,0.09011187404),
+TensorEntry(5,5,8,-0.1560783535),
+TensorEntry(5,6,5,0.09011187404),
+TensorEntry(5,7,4,0.1560783535),
+TensorEntry(5,8,5,-0.1560783535),
+TensorEntry(6,0,6,0.2820948064),
+TensorEntry(6,1,1,-0.1261566281),
+TensorEntry(6,2,2,0.2523132563),
+TensorEntry(6,3,3,-0.1261566281),
+TensorEntry(6,4,4,-0.1802237481),
+TensorEntry(6,5,5,0.09011187404),
+TensorEntry(6,6,0,0.2820948064),
+TensorEntry(6,6,6,0.1802237481),
+TensorEntry(6,7,7,0.09011187404),
+TensorEntry(6,8,8,-0.1802237481),
+TensorEntry(7,0,7,0.2820948064),
+TensorEntry(7,2,3,0.218509689),
+TensorEntry(7,3,2,0.218509689),
+TensorEntry(7,4,5,0.1560783535),
+TensorEntry(7,5,4,0.1560783535),
+TensorEntry(7,6,7,0.09011187404),
+TensorEntry(7,7,0,0.2820948064),
+TensorEntry(7,7,6,0.09011187404),
+TensorEntry(7,7,8,0.1560783535),
+TensorEntry(7,8,7,0.1560783535),
+TensorEntry(8,0,8,0.2820948064),
+TensorEntry(8,1,1,-0.218509689),
+TensorEntry(8,3,3,0.218509689),
+TensorEntry(8,5,5,-0.1560783535),
+TensorEntry(8,6,8,-0.1802237481),
+TensorEntry(8,7,7,0.1560783535),
+TensorEntry(8,8,0,0.2820948064),
+TensorEntry(8,8,6,-0.1802237481));
+
 
 in vec3 position; // world position (attribute interpolated)
 in vec3 normal_interpolate; // world normal (attribute interpolated)
@@ -16,10 +105,28 @@ uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH ba
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
 uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, needs to be converted to be function of magnitude
 uniform vec4 u_sphere[30]; // vec4(position, radius)
+uniform float max_magn;
 
 // TODO: windowing
 
-float[N] shexp(float[N] f)
+float[N] shsqr(float[N] f)
+{
+    // TODO optimize by symmetry
+    float[N] g = float[N](0,0,0,0,0,0,0,0,0);
+    for (int i=0; i<83; ++i)
+        g[sparse3[i].c] += sparse3[i].val * f[sparse3[i].a] * f[sparse3[i].b];
+    return g;
+}
+
+float[N] shmul(float[N] a, float[N] b)
+{
+    float[N] g = float[N](0,0,0,0,0,0,0,0,0);
+    for (int i=0; i<83; ++i)
+        g[sparse3[i].c] += sparse3[i].val * a[sparse3[i].a] * b[sparse3[i].b];
+    return g;
+}
+
+float[N] shexp_naive_linear(float[N] f)
 {
     // naive linear
     float[N] g;
@@ -30,6 +137,78 @@ float[N] shexp(float[N] f)
         g[i] = f[i]*e;
     }
     return g;
+}
+
+float[N] shexp_OL(float[N] f)
+{
+    // calculate magnitude of f_hat
+    float magn = 0;
+    for (int i=1; i<N; ++i)
+        magn += f[i] * f[i];
+    magn = sqrt(magn);
+    // lookup optimal coefficients
+    float u = (magn / max_magn * 1023 + 0.5) / 1024;
+    float a = texture(u_ab_lut, vec2(0.0, u)).r;
+    float b = texture(u_ab_lut, vec2(1.0, u)).r;
+    float[N] g;
+    // apply DC isolation
+    float e = exp(f[0]/sqrt(4.0/PI));
+    g[0] = a * sqrt(4.0*PI)*e;
+    for (int i = 1; i < N; i++)
+        g[i] = b * f[i]*e;
+    return g;
+}
+
+float[N] shexp_HYB(float[N] f)
+{
+    // calculate magnitude of f_hat
+    float magn = 0;
+    for (int i=1; i<N; ++i)
+        magn += f[i] * f[i];
+    magn = sqrt(magn);
+    // calculate times of scaling/squaring
+    int p = 0;
+    float k = 1;
+    while (magn>0.25) {
+        magn *= 0.5;
+        k *= 0.5;
+        p += 1;
+    }
+    // apply scaling/squaring
+    for (int i=0; i<N; ++i)
+        f[i] *= k;
+    float[N] g = shexp_OL(f);
+    for (int i=0; i<p; ++i)
+        g = shsqr(g);
+    return g;
+}
+
+float[N] shexp_PS9(float[N] f)
+{
+    // isolate DC component
+    float e = exp(f[0]/sqrt(4.0/PI));
+    f[0] = 0;
+    // product series
+    float[N] g = float[N](0,0,0,0,0,0,0,0,0);
+    g[0] = sqrt(4.0*PI);
+    float[N] a = f;
+    for (int i = 1; i < 9; i++)
+    {
+        for (int j=0; j<N; ++j) {
+            a[j] *= 1/i;
+            g[i] += a[j];
+        }
+        a = shmul(a,f);
+    }
+    // apply DC isolation
+    for (int j=0; j<N; ++j)
+        g[j] *= e;
+    return g;
+}
+
+float[N] shexp(float[N] f)
+{
+    return shexp_HYB(f);
 }
 
 float[N] rotate(float[sh_order] a, vec3 w)
