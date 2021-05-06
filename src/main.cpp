@@ -57,7 +57,7 @@ typedef struct
 		GLuint vao, vbo;
 		int vertices;
 
-		m_vec4 sphere[30];
+		m_vec4 sphere[1000];
 		float max_magn;
 	} mesh;
 } scene_t;
@@ -76,9 +76,9 @@ std::string readfile(const char filename[]) {
 static void initScene(scene_t *scene)
 {
 	// load spheres
-	std::ifstream fin1("../res/spheres");
+	std::ifstream fin1("../res/spheres1000");
 	if (!fin1) throw "cannot load spheres";
-	for (int i=0; i<30; ++i) {
+	for (int i=0; i<1000; ++i) {
 		float x,y,z,r;
 		fin1 >> x >> y >> z >> r;
 		scene->mesh.sphere[i] = m_vec4{x,y,z,r};
@@ -160,7 +160,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUseProgram(scene->mesh.program);
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
-	glUniform4fv(glGetUniformLocation(scene->mesh.program, "u_sphere"), 30, &scene->mesh.sphere[0].x);
+	glUniform4fv(glGetUniformLocation(scene->mesh.program, "u_sphere"), 1000, &scene->mesh.sphere[0].x);
 	// textures
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sh_lut"), 3);

@@ -104,7 +104,7 @@ uniform samplerCubeArray u_LHcubemap; // (dir, SHindex(l,m)) => L*H(dir), where 
 uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH basis (l,m) at dir
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
 uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, needs to be converted to be function of magnitude
-uniform vec4 u_sphere[30]; // vec4(position, radius)
+uniform vec4 u_sphere[1000]; // vec4(position, radius)
 uniform float max_magn;
 
 // TODO: windowing
@@ -255,7 +255,7 @@ void main()
 
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 
-    for (int i=0; i<30; ++i) {
+    for (int i=0; i<1000; ++i) {
         vec3 center = u_sphere[i].xyz;
         float radius = u_sphere[i].w;
         vec3 v = center - position;
