@@ -58,6 +58,7 @@ typedef struct
 		int vertices;
 
 		m_vec4 sphere[30];
+		float max_magn;
 	} mesh;
 } scene_t;
 
@@ -84,7 +85,7 @@ static void initScene(scene_t *scene)
 	}
 
 	buildLHcubemap("../res/pisa.shrgb");
-	loadlut(3);
+	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 
 	// mesh
@@ -165,6 +166,8 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sh_lut"), 3);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
+	// max magnitude (for a/b lookup in exp_OL)
+	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	// vertices
 	glBindVertexArray(scene->mesh.vao);
 	glDrawArrays(GL_TRIANGLES, 0, scene->mesh.vertices);
