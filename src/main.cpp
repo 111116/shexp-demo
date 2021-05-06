@@ -26,6 +26,8 @@ extern "C"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #include "imgui.cpp"
 #include "imgui_draw.cpp"
@@ -178,6 +180,7 @@ static void destroyScene(scene_t *scene)
 }
 
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput);
+void saveImage(char* filepath, GLFWwindow* w);
 
 static void error_callback(int error, const char *description)
 {
@@ -245,9 +248,10 @@ int main(int argc, char* argv[])
 		m_perspective44(projection, 45.0f, (float)w / (float)h, 0.01f, 100.0f);
 		drawScene(&scene, view, projection);
 		// display_texture::draw();
-
 		ImGui::Render();
 		glfwSwapBuffers(window);
+		// saveImage("window_save.png", window);
+		// break;
 	}
 
 	destroyScene(&scene);
@@ -259,6 +263,23 @@ int main(int argc, char* argv[])
 		console.error(e);
 		return 1;
 	}
+}
+
+
+
+void saveImage(char* filepath, GLFWwindow* w) {
+	int width, height;
+	glfwGetFramebufferSize(w, &width, &height);
+	GLsizei nrChannels = 3;
+	GLsizei stride = nrChannels * width;
+	stride += (stride % 4) ? (4 - stride % 4) : 0;
+	GLsizei bufferSize = stride * height;
+	std::vector<char> buffer(bufferSize);
+	glPixelStorei(GL_PACK_ALIGNMENT, 4);
+	glReadBuffer(GL_FRONT);
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+	stbi_flip_vertically_on_write(true);
+	stbi_write_png(filepath, width, height, nrChannels, buffer.data(), stride);
 }
 
 
