@@ -189,6 +189,9 @@ static void error_callback(int error, const char *description)
 
 int main(int argc, char* argv[])
 {
+	if (argc>1) {
+		console.warn("single image mode");
+	}
 	try {
 	glfwSetErrorCallback(error_callback);
 	if (!glfwInit()) return 1;
@@ -250,8 +253,10 @@ int main(int argc, char* argv[])
 		// display_texture::draw();
 		ImGui::Render();
 		glfwSwapBuffers(window);
-		// saveImage("window_save.png", window);
-		// break;
+		if (argc>1) {
+			saveImage("window_save.png", window);
+			break;
+		}
 	}
 
 	destroyScene(&scene);
@@ -267,7 +272,7 @@ int main(int argc, char* argv[])
 
 
 
-void saveImage(char* filepath, GLFWwindow* w) {
+void saveImage(char filepath[], GLFWwindow* w) {
 	int width, height;
 	glfwGetFramebufferSize(w, &width, &height);
 	GLsizei nrChannels = 3;
