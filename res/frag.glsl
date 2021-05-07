@@ -264,6 +264,7 @@ void main()
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 
     for (int i=0; i<n_sphere; ++i) {
+        // fetch i-th sphere
         vec4 sph_lookup = texlookup(u_sphere, i);
         vec3 center = sph_lookup.xyz;
         float radius = sph_lookup.w;
@@ -321,4 +322,5 @@ void main()
     result = max(result, 0.0);
     result = pow(result, vec3(1.0/gamma));
     o_color = vec4(result, 1.0);
+    // o_color = vec4(0.5*normal_interpolate+0.5, 0.0); // visualize surface normal
 }
