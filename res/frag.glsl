@@ -104,8 +104,9 @@ uniform samplerCubeArray u_LHcubemap; // (dir, SHindex(l,m)) => L*H(dir), where 
 uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH basis (l,m) at dir
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
 uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, needs to be converted to be function of magnitude
-uniform vec4 u_sphere[1000]; // vec4(position, radius)
+uniform sampler2D u_sphere; // 1024x64 texture, used as array of vec4(position, radius)
 uniform float max_magn;
+uniform int n_sphere;
 
 // TODO: windowing
 
@@ -245,6 +246,13 @@ float sqr(float a)
     return a*a;
 }
 
+vec4 texlookup(sampler2D tex, int i)
+{
+    int row = i/1024;
+    int column = i%1024;
+    return texture(tex, vec2((column+0.5f)/1024, (row+0.5f)/64));
+}
+
 void main()
 {
 // for all sphere blockers
@@ -255,9 +263,10 @@ void main()
 
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 
-    for (int i=0; i<1000; ++i) {
-        vec3 center = u_sphere[i].xyz;
-        float radius = u_sphere[i].w;
+    for (int i=0; i<n_sphere; ++i) {
+        vec4 sph_lookup = texlookup(u_sphere, i);
+        vec3 center = sph_lookup.xyz;
+        float radius = sph_lookup.w;
         vec3 v = center - position;
         float dist = length(v);
         // avoid self-shadowing
@@ -292,6 +301,7 @@ void main()
         float[sh_order] cur_symmlog;
         for (int l=0; l<sh_order; ++l)
             cur_symmlog[l] = texture(u_log_lut, vec2((l+0.5)/sh_order, angle/(PI/2))).x;
+        // rotate and accumulate
         float[N] cur_log = rotate(cur_symmlog, normalize(v));
         for (int j=0; j<N; ++j)
             f[j] += cur_log[j];

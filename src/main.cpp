@@ -40,6 +40,7 @@ extern "C"
 #include "sh/sh.hpp"
 #include "LHcubemap.hpp"
 #include "loadlut.hpp"
+#include "loadspheres.hpp"
 #include "shlut.hpp"
 #include "display_texture.hpp"
 
@@ -57,7 +58,7 @@ typedef struct
 		GLuint vao, vbo;
 		int vertices;
 
-		m_vec4 sphere[1000];
+		int n_sphere;
 		float max_magn;
 	} mesh;
 } scene_t;
@@ -75,16 +76,8 @@ std::string readfile(const char filename[]) {
 
 static void initScene(scene_t *scene)
 {
-	// load spheres
-	std::ifstream fin1("../res/spheres1000");
-	if (!fin1) throw "cannot load spheres";
-	for (int i=0; i<1000; ++i) {
-		float x,y,z,r;
-		fin1 >> x >> y >> z >> r;
-		scene->mesh.sphere[i] = m_vec4{x,y,z,r};
-	}
-
-	buildLHcubemap("../res/pisa.shrgb");
+	scene->mesh.n_sphere = loadspheres();
+	buildLHcubemap("../res/l1.shrgb");
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 
@@ -160,13 +153,14 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUseProgram(scene->mesh.program);
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
-	glUniform4fv(glGetUniformLocation(scene->mesh.program, "u_sphere"), 1000, &scene->mesh.sphere[0].x);
 	// textures
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sh_lut"), 3);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
-	// max magnitude (for a/b lookup in exp_OL)
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
+	// variables
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "n_sphere"), scene->mesh.n_sphere);
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	// vertices
 	glBindVertexArray(scene->mesh.vao);
