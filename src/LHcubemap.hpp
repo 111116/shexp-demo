@@ -23,7 +23,7 @@ void calculate_LHcubemap(const char* filename, float* data, const int size)
 		L_b.a[i] = L[i].z;
 	}
 	// SH-project cosine-weight function H
-	SymmSH<shorder> H([](float theta){return std::max(cos(theta), 0.0f);});
+	SymmSH<shorder> H([](float theta){return std::max(cosf(theta), 0.0f);});
 
 	// calculate L*H(N) at different direction N
 	for (int i = 0; i < size; i++)

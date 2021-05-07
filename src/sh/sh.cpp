@@ -4,6 +4,9 @@
 #include "math/matmath.hpp"
 // #include "color.h"
 
+using std::isnan;
+using std::isinf;
+
 
 /*
     pbrt source code Copyright(c) 1998-2012 Matt Pharr and Greg Humphreys.

@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iosfwd>
+#include <limits>
 
 
 typedef float data_t;
