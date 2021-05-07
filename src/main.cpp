@@ -45,6 +45,14 @@ extern "C"
 #include "display_texture.hpp"
 
 
+const float FOV = 50.0f;
+const char obj_file[] = "../res/fence2.obj";
+const char sphere_file[] = "../res/fence2-200.sph";
+const char sh_light_file[] = "../res/l1.shrgb";
+const char vert_shader_path[] = "../res/vert.glsl";
+const char frag_shader_path[] = "../res/frag.glsl";
+
+
 typedef struct
 {
 	struct
@@ -76,13 +84,13 @@ std::string readfile(const char filename[]) {
 
 static void initScene(scene_t *scene)
 {
-	scene->mesh.n_sphere = loadspheres();
-	buildLHcubemap("../res/l1.shrgb");
+	scene->mesh.n_sphere = loadspheres(sphere_file);
+	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 
 	// mesh
-	yo_scene *yo = yo_load_obj("../res/hifreq_scene.obj", true, false);
+	yo_scene *yo = yo_load_obj(obj_file, true, false);
 	if (!yo || !yo->nshapes)
 		throw "Error loading obj file";
 
@@ -134,7 +142,7 @@ static void initScene(scene_t *scene)
 		"a_position",
 		"a_normal"
 	};
-	scene->mesh.program = s_loadProgram(readfile("../res/vert.glsl").c_str(), readfile("../res/frag.glsl").c_str(), attribs, 2);
+	scene->mesh.program = s_loadProgram(readfile(vert_shader_path).c_str(), readfile(frag_shader_path).c_str(), attribs, 2);
 	if (!scene->mesh.program)
 		throw "Error loading mesh shader";
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");
@@ -245,7 +253,7 @@ int main(int argc, char* argv[])
 		glViewport(0, 0, w, h);
 		float view[16], projection[16];
 		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
-		m_perspective44(projection, 40.0f, (float)w / (float)h, 0.01f, 100.0f);
+		m_perspective44(projection, FOV, (float)w / (float)h, 0.01f, 100.0f);
 		drawScene(&scene, view, projection);
 		// display_texture::draw();
 		ImGui::Render();

@@ -23,10 +23,10 @@ GLuint create_2D_vec4_texture(int width, int height, const float* data)
 }
 
 // return value: number of spheres
-int loadspheres()
+int loadspheres(const char* filename)
 {
 	// read file
-	std::ifstream fin("../res/spheres_all");
+	std::ifstream fin(filename);
 	if (!fin)
 		throw "load spheres: cannot open file";
 	std::vector<float> v;
