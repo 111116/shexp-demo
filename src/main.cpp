@@ -45,12 +45,14 @@ extern "C"
 #include "display_texture.hpp"
 
 
-const float FOV = 50.0f;
-const char obj_file[] = "../res/fence2.obj";
-const char sphere_file[] = "../res/fence2-200.sph";
+const float FOV = 30.0f;
+const char obj_file[] = "../res/hifreq_fixed.obj";
+const char sphere_file[] = "../res/hifreq_scene.sph";
 const char sh_light_file[] = "../res/l1.shrgb";
 const char vert_shader_path[] = "../res/vert.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
+// const char frag_shader_path[] = "../res/frag_show_normal.glsl";
+// const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
 
 
 typedef struct
@@ -297,8 +299,8 @@ void saveImage(const char filepath[], GLFWwindow* w) {
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	static float position[] = { 1.0f, 1.2f, 4.0f };
-	static float rotation[] = { -10.0f, 15.0f };
+	static float position[] = { 3.0f, 2.0f, 5.8f };
+	static float rotation[] = { -13.5766f, 27.4445f };
 
 	// mouse look
 	static double lastMouse[] = { 0.0, 0.0 };
@@ -341,4 +343,11 @@ static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInpu
 	m_transpose44(inverseRotation, rotationYX);
 	m_translation44(inverseTranslation, -position[0], -position[1], -position[2]);
 	m_mul44(view, inverseRotation, inverseTranslation); // = inverse(translation(position) * rotationYX);
+
+	// output camera parameters
+	// console.log("position:", position[0], position[1], position[2]);
+	// console.log("rotation:", rotation[0], rotation[1]);
+	// console.log("view");
+	// for (int i=0; i<16; ++i)
+	// 	console.log(view[i]);
 }
