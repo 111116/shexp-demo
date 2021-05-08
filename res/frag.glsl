@@ -322,5 +322,4 @@ void main()
     result = max(result, 0.0);
     result = pow(result, vec3(1.0/gamma));
     o_color = vec4(result, 1.0);
-    // o_color = vec4(0.5*normal_interpolate+0.5, 0.0); // visualize surface normal
 }
