@@ -218,7 +218,7 @@ int main(int argc, char* argv[])
 	if (!window) return 1;
 	glfwMakeContextCurrent(window);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0); // vsync disabled
 
 	ImGui_ImplGlfwGL3_Init(window, true);
 
