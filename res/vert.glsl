@@ -101,6 +101,7 @@ TensorEntry(8,8,6,-0.1802237481));
 // attributes
 in vec3 a_position;
 in vec3 a_normal;
+in int a_clusterid;
 // model transform
 uniform mat4 u_view;
 uniform mat4 u_projection;

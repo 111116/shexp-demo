@@ -29,17 +29,17 @@ GLuint create_2D_vec4_texture(int width, int height, const float* data)
 // return value: number of spheres
 int loadspheres(const char* filename)
 {
-	std::vector<Sphere> spheres;
+	// std::vector<Sphere> spheres;
 	// read file
 	std::ifstream fin(filename);
 	if (!fin)
 		throw "load spheres: cannot open file";
-	Sphere t(vec3f(),0);
-	while (fin >> t.center >> t.radius) {
-		spheres.push_back(t);
-	}
-	visualize(sphere_hierarchy(spheres));
-	throw "exiting...";
+	// Sphere t(vec3f(),0);
+	// while (fin >> t.center >> t.radius) {
+	// 	spheres.push_back(t);
+	// }
+	// visualize(sphere_hierarchy(spheres));
+	// throw "exiting...";
 
 	std::vector<float> v;
 	float x;
