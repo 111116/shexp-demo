@@ -2,7 +2,7 @@
 
 - [x] framework
 - [x] sphere set approximation
-- [ ] sphere hierachy
+- [x] sphere hierachy
 - [x] avoid self-shadowing
 - [ ] receiver point clustering
 - [ ] blocker selection & ratio vector
