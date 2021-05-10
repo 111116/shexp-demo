@@ -26,6 +26,7 @@ GLuint createFloat2DTexture(int width, int height, const float* data)
 
 void loadlut(int n, float& maxmagn)
 {
+	console.log("loading log & OL lut...");
 	float log_lut[n_entry*n];
 	float ab_lut[n_entry*2];
 	float a[n_entry], b[n_entry], magn[n_entry];

@@ -42,7 +42,7 @@ void calculate_sh_lut(float* data, const int size)
 
 GLuint build_sh_lut()
 {
-	console.log("building sh lut");
+	console.log("building sh lut...");
 	const int size = 128;
 	float *data = new float[N_COEFFS*6*size*size];
 

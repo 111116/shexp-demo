@@ -1021,7 +1021,7 @@ yo_load_obj(const char* filename, bool triangulate, bool ext) {
     FILE* file = fopen(filename, "rt");
     if (!file) return 0;
 
-    fprintf(stderr, "yocto: loading scene...\n");
+    // fprintf(stderr, "yocto: loading scene...\n");
 
     // foreach line, splits the line by whitespaces and parses the data
     // directly in the current shape, emitting shapes when either name,

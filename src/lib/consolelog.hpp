@@ -21,6 +21,7 @@ public:
 	std::string  infoColor = "\033[0;32m";
 	std::string  warnColor = "\033[1;33m";
 	std::string errorColor = "\033[1;31m";
+	std::string debugColor = "\033[1;30m";
 	bool colored = false;
 	int loglevel = 0;
 
@@ -81,8 +82,10 @@ void ConsoleLogger::debug(const Args&... args)
 {
 #ifndef NDEBUG
 	mtx.lock();
+	if (colored) out << debugColor;
 	out << "... ";
 	print(args...);
+	if (colored) out << "\033[0m";
 	mtx.unlock();
 #endif
 }
