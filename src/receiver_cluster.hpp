@@ -7,7 +7,7 @@
 
 const char cluster_file[] = "cluster.cache";
 
-void cluster_points_recalculate(int n, int n_cluster, vec3f* positions, int* clusterids);
+void cluster_points_recalculate(int n, int n_cluster, const vec3f* positions, int* clusterids);
 
 void cluster_points(int n, vec3f* positions, int* clusterids)
 {
@@ -28,7 +28,7 @@ void cluster_points(int n, vec3f* positions, int* clusterids)
 }
 
 
-void cluster_points_recalculate(int n, int n_cluster, vec3f* positions, int* clusterids)
+void cluster_points_recalculate(int n, int n_cluster, const vec3f* positions, int* clusterids)
 {
 	console.time("receiver cluster");
 	// random initialize clusters
@@ -72,4 +72,95 @@ void cluster_points_recalculate(int n, int n_cluster, vec3f* positions, int* clu
 		fout << positions[i].x << " " << positions[i].y << " " << positions[i].z << "\n";
 	for (int i=0; i<n; ++i)
 		fout << clusterids[i] << "\n";
+}
+
+
+
+GLuint create_2D_vec4_texture(int width, int height, const float* data)
+{
+	// create & bind a named texture
+	GLuint texture;
+	glGenTextures(1, &texture);  
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	// we use nestest interpolation since this texture is used for data retrieval
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// generate the texture
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+	// glGenerateMipmap(GL_TEXTURE_2D);
+	return texture;
+}
+
+std::vector<Sphere> treecut(const SphereTree& hierarchy, vec3f cluster_center, float cluster_radius, float angle_limit)
+{
+	// stop recursing if the blockersphere subtends an angle less than angle_limit
+	if (hierarchy.child.empty() || hierarchy.bound.radius < sin(angle_limit) * (norm(hierarchy.bound.center - cluster_center) - cluster_radius))
+		return {hierarchy.bound};
+	std::vector<Sphere> res;
+	for (auto c: hierarchy.child)
+	{
+		auto cut = treecut(c, cluster_center, cluster_radius, angle_limit);
+		res.insert(res.end(), cut.begin(), cut.end());
+	}
+	return res;
+}
+
+// generates 2D texture
+void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, const SphereTree& hierarchy)
+{
+	console.log("per-cluster processing...");
+	// calculate number of clusters
+	int maxcluster = 0;
+	for (int recv=0; recv<n; ++recv)
+		maxcluster = std::max(maxcluster, clusterids[recv]);
+	int n_cluster = maxcluster+1;
+	// calculate centers of clusters (average over all receivers)
+	std::vector<int> recv_cnt(n_cluster,0);
+	std::vector<vec3f> recv_sum(n_cluster,0);
+	for (int recv=0; recv<n; ++recv) {
+		int c = clusterids[recv];
+		recv_cnt[c] += 1;
+		recv_sum[c] += positions[recv];
+	}
+	vec3f cluster_center[n_cluster];
+	for (int c=0; c<n_cluster; ++c) {
+		cluster_center[c] = recv_sum[c] / recv_cnt[c];
+		if (recv_cnt[c] == 0) {
+			console.debug("encountering empty receiver cluster");
+			cluster_center[c] = vec3f(0,0,0);
+		}
+	}
+	// calculate bounding radius of clusters
+	std::vector<float> cluster_radius(n_cluster,0);
+	for (int recv=0; recv<n; ++recv) {
+		int c = clusterids[recv];
+		cluster_radius[c] = std::max(cluster_radius[c], norm(positions[recv] - cluster_center[c]));
+	}
+	// prepare texture data
+	static const int texwidth = 1024; // max number of spheres per cluster
+	static const int texheight = 1024; // max number of cluster
+	float* texdata = new float[texwidth * texheight * 4];
+	// assemble bounding sphere nodes for shading each cluster
+	static const float theta_max = (float)20/180*PI;
+	static const float theta_min = (float)5/180*PI;
+	for (int c=0; c<n_cluster; ++c) {
+		// TODO save number of bounding
+		vec3f center = cluster_center[c];
+		float radius = cluster_radius[c];
+		std::vector<Sphere> bounding = treecut(hierarchy, center, radius, theta_max);
+		std::vector<Sphere> detailed = treecut(hierarchy, center, radius, theta_min);
+		if (bounding.size() > texwidth || c >= texheight)
+			throw "sphere texture overflowing";
+		// TODO calculate ratio vector
+		// store into texture data
+		memcpy(texdata + texwidth*4*c, bounding.data(), bounding.size() * sizeof(Sphere));
+	}
+	// build texture
+	glActiveTexture(GL_TEXTURE4);
+	// data layout of Sphere is exactly RGBA32F
+	create_2D_vec4_texture(texwidth, texheight, texdata);
+	delete[] texdata;
 }

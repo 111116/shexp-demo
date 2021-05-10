@@ -70,7 +70,7 @@ typedef struct
 		GLuint vao, vbo;
 		int vertices;
 
-		int n_sphere;
+		// int n_sphere;
 		float max_magn;
 	} mesh;
 } scene_t;
@@ -88,12 +88,13 @@ std::string readfile(const char filename[]) {
 
 static void initScene(scene_t *scene)
 {
-	scene->mesh.n_sphere = loadspheres(sphere_file);
+	SphereTree hierarchy = load_sphere_hierarchy(sphere_file);
 	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 
 	// mesh
+	console.log("loading scene...");
 	yo_scene *yo = yo_load_obj(obj_file, true, false);
 	if (!yo || !yo->nshapes)
 		throw "Error loading obj file";
@@ -125,7 +126,9 @@ static void initScene(scene_t *scene)
 	yo_free_scene(yo);
 	// cluster receiver
 	cluster_points(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids);
+	cluster_preprocess(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids, hierarchy);
 
+	console.log("renderer initializing...");
 	// upload geometry to opengl
 	glGenVertexArrays(1, &scene->mesh.vao);
 	glBindVertexArray(scene->mesh.vao);
@@ -185,7 +188,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	// variables
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "n_sphere"), scene->mesh.n_sphere);
+	// glUniform1i(glGetUniformLocation(scene->mesh.program, "n_sphere"), scene->mesh.n_sphere); // TODO
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	// vertices
 	glBindVertexArray(scene->mesh.vao);

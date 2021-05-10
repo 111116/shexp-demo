@@ -67,6 +67,7 @@ std::vector<Sphere> sphere_tree_leaves(const SphereTree& tree)
 
 SphereTree sphere_hierarchy(std::vector<Sphere> spheres)
 {
+	console.log("building sphere hierarchy...");
 	// build leaf nodes
 	std::vector<SphereTree> nodes;
 	for (auto s: spheres)
@@ -94,7 +95,7 @@ SphereTree sphere_hierarchy(std::vector<Sphere> spheres)
 			for (auto p: parents)
 				curloss += p.bound.radius;
 			if (curloss > lastloss)
-				console.warn("sphere clustering: loss increasing");
+				console.debug("sphere clustering: loss increasing");
 			if (curloss > lastloss - 1e-5)
 				break;
 			lastloss = curloss;
