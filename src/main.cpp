@@ -48,10 +48,11 @@ extern "C"
 
 const float FOV = 30.0f;
 const char obj_file[] = "../res/hifreq_fixed.obj";
-const char sphere_file[] = "../res/ball-30.sph";
+const char sphere_file[] = "../res/ball-200.sph";
 // const char sphere_file[] = "../res/hifreq_scene.sph";
 const char sh_light_file[] = "../res/l1.shrgb";
-const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
+const char vert_shader_path[] = "../res/vert.glsl";
+// const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";

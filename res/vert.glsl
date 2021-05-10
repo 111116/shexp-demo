@@ -102,6 +102,7 @@ TensorEntry(8,8,6,-0.1802237481));
 in vec3 a_position;
 in vec3 a_normal;
 in int a_clusterid;
+in int a_sphcnt;
 // model transform
 uniform mat4 u_view;
 uniform mat4 u_projection;
@@ -270,9 +271,9 @@ void main()
 	// accumulate log(occu)
     float[N] f = float[N](0,0,0,0,0,0,0,0,0);
 	// for all sphere blockers
-    for (int i=0; i<n_sphere; ++i) {
+    for (int i=0; i<a_sphcnt; ++i) {
         // fetch i-th sphere
-        vec4 sph_lookup = texlookup(u_sphere, i);
+        vec4 sph_lookup = texture(u_sphere, vec2((i+0.5f)/1024, (a_clusterid+0.5f)/1024));
         vec3 center = sph_lookup.xyz;
         float radius = sph_lookup.w;
         vec3 v = center - a_position;
