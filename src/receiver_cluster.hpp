@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include "consolelog.hpp"
+#include "mock_shexp.hpp"
 
 const char cluster_file[] = "cluster.cache";
 
@@ -148,14 +149,24 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	static const float theta_min = (float)5/180*PI;
 	std::vector<float> cluster_blocker_count(n_cluster,0);
 	for (int c=0; c<n_cluster; ++c) {
-		// TODO save number of bounding
 		vec3f center = cluster_center[c];
 		float radius = cluster_radius[c];
 		std::vector<Sphere> bounding = treecut(hierarchy, center, radius, theta_max);
 		std::vector<Sphere> detailed = treecut(hierarchy, center, radius, theta_min);
 		if (bounding.size() > texwidth || c >= texheight)
 			throw "sphere texture overflowing";
-		// TODO calculate ratio vector
+		// calculate ratio vector
+		float w[shorder];
+		SH<shorder> fb = visibility(center, bounding);
+		SH<shorder> fd = visibility(center, detailed);
+		for (int l=0; l<shorder; ++l) {
+			float bd=0, bb=0;
+			for (int m=-l; m<l; ++m) {
+				bd += fb.at(l,m) * fd.at(l,m);
+				bb += fb.at(l,m) * fb.at(l,m);
+			}
+			w[l] = bd / bb;
+		}
 		// store into texture data
 		memcpy(texdata + texwidth*4*c, bounding.data(), bounding.size() * sizeof(Sphere));
 		cluster_blocker_count[c] = bounding.size();

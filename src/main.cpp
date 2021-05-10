@@ -196,7 +196,6 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	// variables
-	// glUniform1i(glGetUniformLocation(scene->mesh.program, "n_sphere"), scene->mesh.n_sphere); // TODO
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	// vertices
 	glBindVertexArray(scene->mesh.vao);
