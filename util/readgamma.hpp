@@ -24,7 +24,7 @@ static std::vector<TensorEntry> readGamma(int n)
 {
     std::vector<TensorEntry> sparsegamma;
     std::string line;
-    std::ifstream sparsefile("../../gamma/sparse" + std::to_string(n));
+    std::ifstream sparsefile("../gamma/sparse" + std::to_string(n));
 	if (!sparsefile) throw "cannot open file";
     TensorEntry entry;
     while(getline(sparsefile, line))
