@@ -107,9 +107,11 @@ static void initScene(scene_t *scene)
 	m_vec3 *positions = (m_vec3*)calloc(scene->mesh.vertices, sizeof(m_vec3));
 	m_vec3 *normals   = (m_vec3*)calloc(scene->mesh.vertices, sizeof(m_vec3));
 	int *clusterids   = (int*)calloc(scene->mesh.vertices, sizeof(int));
+	int *sphcnt   = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	size_t positionsSize = scene->mesh.vertices * sizeof(m_vec3);
 	size_t normalsSize   = scene->mesh.vertices * sizeof(m_vec3);
 	size_t clusteridsSize   = scene->mesh.vertices * sizeof(int);
+	size_t sphcntSize   = scene->mesh.vertices * sizeof(int);
 
 	// fill positions & normals from scene
 	int n = 0;
@@ -126,7 +128,7 @@ static void initScene(scene_t *scene)
 	yo_free_scene(yo);
 	// cluster receiver
 	cluster_points(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids);
-	cluster_preprocess(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids, hierarchy);
+	cluster_preprocess(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids, hierarchy, sphcnt);
 
 	console.log("renderer initializing...");
 	// upload geometry to opengl
@@ -135,12 +137,13 @@ static void initScene(scene_t *scene)
 	// upload attribute data
 	glGenBuffers(1, &scene->mesh.vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, scene->mesh.vbo);
-	glBufferData(GL_ARRAY_BUFFER, positionsSize + normalsSize + clusteridsSize, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, positionsSize + normalsSize + clusteridsSize + sphcntSize, NULL, GL_STATIC_DRAW);
 	unsigned char *buffer = (unsigned char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	assert(buffer);
 	memcpy(buffer, positions, positionsSize);
 	memcpy(buffer + positionsSize, normals, normalsSize);
 	memcpy(buffer + positionsSize + normalsSize, clusterids, clusteridsSize);
+	memcpy(buffer + positionsSize + normalsSize + clusteridsSize, sphcnt, sphcntSize);
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	// set attribute pointers
@@ -150,19 +153,23 @@ static void initScene(scene_t *scene)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)positionsSize);
 	glEnableVertexAttribArray(2);
 	glVertexAttribIPointer(2, 1, GL_INT, 0, (void*)(positionsSize + normalsSize));
+	glEnableVertexAttribArray(3);
+	glVertexAttribIPointer(3, 1, GL_INT, 0, (void*)(positionsSize + normalsSize + clusteridsSize));
 
 	// free host space
 	free(positions);
 	free(normals);
 	free(clusterids);
+	free(sphcnt);
 
 	const char *attribs[] =
 	{
 		"a_position",
 		"a_normal",
-		"a_clusterid"
+		"a_clusterid",
+		"a_sphcnt"
 	};
-	scene->mesh.program = s_loadProgram(readfile(vert_shader_path).c_str(), readfile(frag_shader_path).c_str(), attribs, 3);
+	scene->mesh.program = s_loadProgram(readfile(vert_shader_path).c_str(), readfile(frag_shader_path).c_str(), attribs, 4);
 	if (!scene->mesh.program)
 		throw "Error loading mesh shader";
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");

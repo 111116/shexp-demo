@@ -109,7 +109,7 @@ std::vector<Sphere> treecut(const SphereTree& hierarchy, vec3f cluster_center, f
 }
 
 // generates 2D texture
-void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, const SphereTree& hierarchy)
+void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, const SphereTree& hierarchy, int* sphcnt)
 {
 	console.log("per-cluster processing...");
 	// calculate number of clusters
@@ -146,6 +146,7 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	// assemble bounding sphere nodes for shading each cluster
 	static const float theta_max = (float)20/180*PI;
 	static const float theta_min = (float)5/180*PI;
+	std::vector<float> cluster_blocker_count(n_cluster,0);
 	for (int c=0; c<n_cluster; ++c) {
 		// TODO save number of bounding
 		vec3f center = cluster_center[c];
@@ -157,10 +158,22 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 		// TODO calculate ratio vector
 		// store into texture data
 		memcpy(texdata + texwidth*4*c, bounding.data(), bounding.size() * sizeof(Sphere));
+		cluster_blocker_count[c] = bounding.size();
 	}
 	// build texture
 	glActiveTexture(GL_TEXTURE4);
 	// data layout of Sphere is exactly RGBA32F
 	create_2D_vec4_texture(texwidth, texheight, texdata);
 	delete[] texdata;
+	// assign sphere count of each vertex
+	for (int recv=0; recv<n; ++recv)
+		sphcnt[recv] = cluster_blocker_count[clusterids[recv]];
+	// show stats
+	int s = 0, max = 0;
+	for (int t: cluster_blocker_count) {
+		s += t;
+		max = std::max(max, t);
+	}
+	console.log("max #blockers per cluster:", max);
+	console.log("avg #blockers per cluster:", 10 * s / n_cluster * 0.1);
 }

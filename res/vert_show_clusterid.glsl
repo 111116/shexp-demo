@@ -7,6 +7,7 @@
 in vec3 a_position;
 in vec3 a_normal;
 in int a_clusterid;
+in int a_sphcnt;
 // model transform
 uniform mat4 u_view;
 uniform mat4 u_projection;
@@ -31,4 +32,5 @@ void main()
     float(a_clusterid*123%256)/255,
     float(a_clusterid*777%256)/255,
     float(a_clusterid*817%256)/255);
+    // color = vec3(a_sphcnt*0.02, 0, 0);
 }
