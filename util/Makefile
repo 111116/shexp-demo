@@ -10,3 +10,6 @@ test: test.cpp *.hpp
 
 makelut: makelut.cpp *.hpp
 	$(CXX) $(CXXFLAGS) $< sh.cpp lib/*.cpp -o $@
+
+ad: ad.cpp *.hpp
+	$(CXX) $(CXXFLAGS) $< sh.cpp lib/*.cpp -o $@
