@@ -17,7 +17,8 @@ SphereTree load_sphere_hierarchy(const char* filename)
 		throw "load spheres: cannot open file";
 	Sphere t(vec3f(),0);
 	while (fin >> t.center >> t.radius) {
-		spheres.push_back(t);
+		if (t.radius > 0)
+			spheres.push_back(t);
 	}
 	return sphere_hierarchy(spheres);
 }
