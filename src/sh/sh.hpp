@@ -34,7 +34,7 @@ public:
     float a[n] = {0};
     SymmSH(){}
     // from spherical function symmetric around z-axis (about theta)
-    SymmSH(std::function<float(float)>, int nsample = 100000);
+    SymmSH(std::function<float(float)>, int nsample = 10000);
     // rotated to be centered around arbitrary axis z'
     SH<n> rotated(vec3f z);
 };
