@@ -1,7 +1,6 @@
 #pragma once
 
-const int shorder = 3;
-const int N_COEFFS = shorder * shorder;
+#include "shorder.hpp"
 
 // cubemap stores SH projection of product of environment light L and cosine-weight function H at different direction
 void calculate_LHcubemap(const char* filename, float* data, const int size)

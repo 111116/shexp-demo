@@ -5,6 +5,7 @@
 #include <vector>
 #include "consolelog.hpp"
 #include "mock_shexp.hpp"
+#include "shorder.hpp"
 
 const char cluster_file[] = "cluster.cache";
 

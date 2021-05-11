@@ -326,6 +326,6 @@ void main()
     vec3 result = shdot(g, LH);
     // L_H dot product with SH_one, yields the integral of L_H
 
-    result = 0.8 / 3.1416 * result; // times brdf
+    result = 1.0 / PI * result; // times brdf
     color = result;
 }

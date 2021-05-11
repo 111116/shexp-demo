@@ -12,7 +12,7 @@ std::function<float(float)> occlusion(float theta0)
 }
 
 // sh order n=4 (16 coefficients for general projection)
-const int n_order = 3;
+const int n_order = 4;
 typedef SH<n_order> Sh;
 typedef SymmSH<n_order> SymmSh;
 

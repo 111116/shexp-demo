@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "shorder.hpp"
 #include "loadlut.hpp"
 
 namespace {
