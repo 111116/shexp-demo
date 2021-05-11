@@ -132,7 +132,7 @@ float[N] shexp_PS9(float[N] f)
 
 float[N] shexp(float[N] f)
 {
-    return shexp_HYB(f);
+    return shexp_OL(f);
 }
 
 float[N] rotate(float[sh_order] a, vec3 w)
