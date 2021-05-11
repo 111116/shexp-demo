@@ -23,10 +23,7 @@ uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, 
 uniform sampler2D u_sphere; // 1024x1024 texture of sphere (center, radius)
 uniform sampler2DArray u_ratio; // sh_order x 1024x1024 texture of ratio
 
-uniform sampler2D u_sparse_a;
-uniform sampler2D u_sparse_b;
-uniform sampler2D u_sparse_c;
-uniform sampler2D u_sparse_val;
+uniform sampler2D u_sparse;
 
 uniform float max_magn;
 uniform int gammasize;
@@ -38,13 +35,22 @@ float[N] shmul(float[N] a, float[N] b)
     float[N] g = float[N](0,0,0,0,0,0,0,0,0);
     for (int i=0; i<gammasize; ++i)
     {
+        vec4 lookup = texture(u_sparse, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024));
+        int s_a = int(lookup.x);
+        int s_b = int(lookup.y);
+        int s_c = int(lookup.z);
+        float s_val = lookup.w;
         // int s_a = floatBitsToInt(texture(u_sparse_a, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024)).x);
         // int s_b = floatBitsToInt(texture(u_sparse_b, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024)).x);
         // int s_c = floatBitsToInt(texture(u_sparse_c, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024)).x);
-        int s_a = 0;
-        int s_b = 0;
-        int s_c = 0;
-        float s_val = texture(u_sparse_val, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024)).x;
+
+        // int s_a = floatBitsToInt(texelFetch(u_sparse_a, ivec2(i%1024, i/1024), 0).x);
+        // int s_b = floatBitsToInt(texelFetch(u_sparse_b, ivec2(i%1024, i/1024), 0).x);
+        // int s_c = floatBitsToInt(texelFetch(u_sparse_c, ivec2(i%1024, i/1024), 0).x);
+        // int s_a = 0;
+        // int s_b = 0;
+        // int s_c = 0;
+        // float s_val = texture(u_sparse_val, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024)).x;
         g[s_c] += s_val * a[s_a] * b[s_b];
     }
     return g;

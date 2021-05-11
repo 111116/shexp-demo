@@ -55,7 +55,7 @@ namespace display_texture
 
 			void main()
 			{
-			    o_color = 0.5 * texture(u_map, f_position.xy);
+			    o_color = 0.1 * texture(u_map, vec2(f_position.x,0));
 			    // o_color = vec4(f_position, 0.0);
 			}
 
@@ -79,7 +79,7 @@ namespace display_texture
 		// mesh
 		glUseProgram(program);
 		// textures
-		glUniform1i(glGetUniformLocation(program, "u_map"), 2);
+		glUniform1i(glGetUniformLocation(program, "u_map"), 15);
 		// vertices
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
