@@ -396,7 +396,7 @@ float[N] shsqr(float[N] f)
 {
     // TODO optimize by symmetry
     float[N] g = float[N](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-    for (int i=0; i<83; ++i)
+    for (int i=0; i<355; ++i)
         g[sparse3[i].c] += sparse3[i].val * f[sparse3[i].a] * f[sparse3[i].b];
     return g;
 }
@@ -404,7 +404,7 @@ float[N] shsqr(float[N] f)
 float[N] shmul(float[N] a, float[N] b)
 {
     float[N] g = float[N](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
-    for (int i=0; i<83; ++i)
+    for (int i=0; i<355; ++i)
         g[sparse3[i].c] += sparse3[i].val * a[sparse3[i].a] * b[sparse3[i].b];
     return g;
 }
