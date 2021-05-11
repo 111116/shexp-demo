@@ -6,9 +6,6 @@
 void calculate_sh_lut(float* data, const int size)
 // layout: SHindex, face, position, rgb
 {
-	const int N_COEFFS = 9;
-	const int n = 3;
-
 	// evaluate SH bases at different direction N
 	for (int i = 0; i < size; i++)
 	{
@@ -30,7 +27,7 @@ void calculate_sh_lut(float* data, const int size)
 			{
 				float coeffs[N_COEFFS];
 				vec3f N = normalized(d[face]);
-				SHEvaluate(N, n-1, coeffs);
+				SHEvaluate(N, shorder-1, coeffs);
 				// fill in data
 				for(int index=0; index < N_COEFFS; ++index) {
 					data[((index*6 + face) * size + i) * size + j] = coeffs[index];
