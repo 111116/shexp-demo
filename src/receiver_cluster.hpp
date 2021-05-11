@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cmath>
 #include "consolelog.hpp"
 #include "mock_shexp.hpp"
 #include "shorder.hpp"
@@ -145,6 +146,9 @@ std::vector<std::pair<Sphere, std::vector<float>>> treecut_ratio(const SphereTre
 				bb += fb.at(l,m) * fb.at(l,m);
 			}
 			w[l] = bd / bb;
+			// replace nan with 1
+			if (std::isnan(w[l]))
+				w[l] = 1.0f;
 		}
 		return {{hierarchy.bound, w}};
 	}
