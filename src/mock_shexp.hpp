@@ -57,7 +57,7 @@ namespace {
 	template <typename T>
 	T lut_lookup(std::vector<T> v, float position)
 	{
-		float p = (v.size()-1) * p;
+		float p = (v.size()-1) * position;
 		if (p<=0) return v[0];
 		if (p>=v.size()-1) return v.back();
 		int i = (int)p;

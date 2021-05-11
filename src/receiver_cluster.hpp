@@ -139,7 +139,7 @@ std::vector<std::pair<Sphere, std::vector<float>>> treecut_ratio(const SphereTre
 		SH<shorder> fd = log_visibility(cluster_center, detailed);
 		for (int l=0; l<shorder; ++l) {
 			float bd=0, bb=0;
-			for (int m=-l; m<l; ++m) {
+			for (int m=-l; m<=l; ++m) {
 				bd += fb.at(l,m) * fd.at(l,m);
 				bb += fb.at(l,m) * fb.at(l,m);
 			}
