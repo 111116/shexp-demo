@@ -109,6 +109,35 @@ std::vector<Sphere> treecut(const SphereTree& hierarchy, vec3f cluster_center, f
 	return res;
 }
 
+std::vector<std::pair<Sphere, std::vector<float>>> treecut_ratio(const SphereTree& hierarchy, vec3f cluster_center, float cluster_radius, float angle_limit, float detailed_angle_limit)
+{
+	// stop recursing if the blockersphere subtends an angle less than angle_limit
+	if (hierarchy.child.empty() || hierarchy.bound.radius < sin(angle_limit) * (norm(hierarchy.bound.center - cluster_center) - cluster_radius))
+	{
+		std::vector<Sphere> bounding = {hierarchy.bound};
+		std::vector<Sphere> detailed = treecut(hierarchy, cluster_center, cluster_radius, detailed_angle_limit);
+		std::vector<float> w(shorder);
+		SH<shorder> fb = log_visibility(cluster_center, bounding);
+		SH<shorder> fd = log_visibility(cluster_center, detailed);
+		for (int l=0; l<shorder; ++l) {
+			float bd=0, bb=0;
+			for (int m=-l; m<l; ++m) {
+				bd += fb.at(l,m) * fd.at(l,m);
+				bb += fb.at(l,m) * fb.at(l,m);
+			}
+			w[l] = bd / bb;
+		}
+		return {{hierarchy.bound, w}};
+	}
+	std::vector<std::pair<Sphere, std::vector<float>>> res;
+	for (auto c: hierarchy.child)
+	{
+		auto cut = treecut_ratio(c, cluster_center, cluster_radius, angle_limit, detailed_angle_limit);
+		res.insert(res.end(), cut.begin(), cut.end());
+	}
+	return res;
+}
+
 // generates 2D texture
 void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, const SphereTree& hierarchy, int* sphcnt)
 {
@@ -149,27 +178,14 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	static const float theta_min = (float)5/180*PI;
 	std::vector<float> cluster_blocker_count(n_cluster,0);
 	for (int c=0; c<n_cluster; ++c) {
-		vec3f center = cluster_center[c];
-		float radius = cluster_radius[c];
-		std::vector<Sphere> bounding = treecut(hierarchy, center, radius, theta_max);
-		std::vector<Sphere> detailed = treecut(hierarchy, center, radius, theta_min);
-		if (bounding.size() > texwidth || c >= texheight)
+		std::vector<std::pair<Sphere, std::vector<float>>> blockers
+			= treecut_ratio(hierarchy, cluster_center[c], cluster_radius[c], theta_max, theta_min);
+		if (blockers.size() > texwidth || c >= texheight)
 			throw "sphere texture overflowing";
 		// calculate ratio vector
-		float w[shorder];
-		SH<shorder> fb = visibility(center, bounding);
-		SH<shorder> fd = visibility(center, detailed);
-		for (int l=0; l<shorder; ++l) {
-			float bd=0, bb=0;
-			for (int m=-l; m<l; ++m) {
-				bd += fb.at(l,m) * fd.at(l,m);
-				bb += fb.at(l,m) * fb.at(l,m);
-			}
-			w[l] = bd / bb;
-		}
-		// store into texture data
-		memcpy(texdata + texwidth*4*c, bounding.data(), bounding.size() * sizeof(Sphere));
-		cluster_blocker_count[c] = bounding.size();
+		// store into texture data TODO
+		// memcpy(texdata + texwidth*4*c, bounding.data(), bounding.size() * sizeof(Sphere));
+		cluster_blocker_count[c] = blockers.size();
 	}
 	// build texture
 	glActiveTexture(GL_TEXTURE4);

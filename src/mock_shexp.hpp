@@ -118,7 +118,7 @@ namespace {
 }
 
 
-SH<shorder> visibility(vec3f cluster_center, std::vector<Sphere> blockers)
+SH<shorder> log_visibility(vec3f cluster_center, std::vector<Sphere> blockers)
 {
 	static int init = loadlut_cpu();
 	SH<shorder> f;
@@ -129,5 +129,5 @@ SH<shorder> visibility(vec3f cluster_center, std::vector<Sphere> blockers)
         SymmSH<shorder> symmlog = log_lookup(angle);
         f = f + symmlog.rotated(normalized(v));
 	}
-	return shexp(f);
+	return f;
 }
