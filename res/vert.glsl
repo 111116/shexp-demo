@@ -114,7 +114,8 @@ uniform samplerCubeArray u_LHcubemap; // (dir, SHindex(l,m)) => L*H(dir), where 
 uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH basis (l,m) at dir
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
 uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, needs to be converted to be function of magnitude
-uniform sampler2D u_sphere; // 1024x64 texture, used as array of vec4(position, radius)
+uniform sampler2D u_sphere; // 1024x1024 texture of sphere (center, radius)
+uniform sampler2DArray u_ratio; // sh_order x 1024x1024 texture of ratio
 uniform float max_magn;
 uniform int n_sphere;
 
@@ -308,8 +309,10 @@ void main()
         float angle = asin(min(radius / dist,1));
         // look up log(visibility) of corresponding angle
         float[sh_order] cur_symmlog;
-        for (int l=0; l<sh_order; ++l)
-            cur_symmlog[l] = texture(u_log_lut, vec2((l+0.5)/sh_order, angle/(PI/2))).x;
+        for (int l=0; l<sh_order; ++l) {
+        	float ratio = texture(u_ratio, vec3((i+0.5f)/1024, (a_clusterid+0.5f)/1024, l)).x;
+            cur_symmlog[l] = ratio * texture(u_log_lut, vec2((l+0.5)/sh_order, angle/(PI/2))).x;
+        }
         // rotate and accumulate
         float[N] cur_log = rotate(cur_symmlog, normalize(v));
         for (int j=0; j<N; ++j)
