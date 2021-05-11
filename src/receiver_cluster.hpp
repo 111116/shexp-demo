@@ -95,6 +95,24 @@ GLuint create_2D_vec4_texture(int width, int height, const float* data)
 	return texture;
 }
 
+GLuint create_2D_float_texture_array(int width, int height, int n_layer, float* data)
+{
+	// create & bind a named texture
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	// we use nestest interpolation since this texture is used for data retrieval
+	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// generate the texture
+	glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_R32F, width, height, n_layer, 0, GL_RED, GL_FLOAT, data);
+	return texture;
+}
+
 std::vector<Sphere> treecut(const SphereTree& hierarchy, vec3f cluster_center, float cluster_radius, float angle_limit)
 {
 	// stop recursing if the blockersphere subtends an angle less than angle_limit
@@ -172,26 +190,33 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	// prepare texture data
 	static const int texwidth = 1024; // max number of spheres per cluster
 	static const int texheight = 1024; // max number of cluster
-	float* texdata = new float[texwidth * texheight * 4];
+	float* sphdata = new float[texheight * texwidth * 4];
+	float* ratiodata = new float[shorder * texheight * texwidth];
 	// assemble bounding sphere nodes for shading each cluster
 	static const float theta_max = (float)20/180*PI;
 	static const float theta_min = (float)5/180*PI;
 	std::vector<float> cluster_blocker_count(n_cluster,0);
 	for (int c=0; c<n_cluster; ++c) {
+		// assemble blockers & calculate ratio vectors
 		std::vector<std::pair<Sphere, std::vector<float>>> blockers
 			= treecut_ratio(hierarchy, cluster_center[c], cluster_radius[c], theta_max, theta_min);
 		if (blockers.size() > texwidth || c >= texheight)
 			throw "sphere texture overflowing";
-		// calculate ratio vector
-		// store into texture data TODO
-		// memcpy(texdata + texwidth*4*c, bounding.data(), bounding.size() * sizeof(Sphere));
+		// store into texture data
+		for (int i=0; i<blockers.size(); ++i) {
+			memcpy(sphdata + c*texwidth*4 + i*4, &blockers[i].first, sizeof(Sphere));
+			for (int k=0; k<shorder; ++k)
+				ratiodata[(k * texheight + c) * texwidth + i] = blockers[i].second[k];
+		}
 		cluster_blocker_count[c] = blockers.size();
 	}
 	// build texture
 	glActiveTexture(GL_TEXTURE4);
-	// data layout of Sphere is exactly RGBA32F
-	create_2D_vec4_texture(texwidth, texheight, texdata);
-	delete[] texdata;
+	create_2D_vec4_texture(texwidth, texheight, sphdata);
+	glActiveTexture(GL_TEXTURE5);
+	create_2D_float_texture_array(texwidth, texheight, shorder, ratiodata);
+	delete[] sphdata;
+	delete[] ratiodata;
 	// assign sphere count of each vertex
 	for (int recv=0; recv<n; ++recv)
 		sphcnt[recv] = cluster_blocker_count[clusterids[recv]];
