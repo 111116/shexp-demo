@@ -199,11 +199,6 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
-	// tripling tensor textures
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_a"), 11);
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_b"), 12);
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_c"), 13);
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_val"), 14);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
