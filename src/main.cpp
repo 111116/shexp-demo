@@ -41,6 +41,7 @@ extern "C"
 #include "LHcubemap.hpp"
 #include "loadlut.hpp"
 #include "loadspheres.hpp"
+#include "loadgamma.hpp"
 #include "shlut.hpp"
 #include "display_texture.hpp"
 #include "receiver_cluster.hpp"
@@ -52,7 +53,7 @@ const char obj_file[] = "../res/hifreq_fixed.obj";
 // const char sphere_file[] = "../res/ball-200.sph";
 const char sphere_file[] = "../res/hifreq_scene.sph";
 const char sh_light_file[] = "../res/pisa.shrgb";
-const char vert_shader_path[] = "../res/vert_sh4.glsl";
+const char vert_shader_path[] = "../res/vert_sh3.glsl";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
@@ -66,14 +67,13 @@ typedef struct
 		GLuint program;
 		GLint u_view;
 		GLint u_projection;
-		// GLint u_LHcubemap;
 
 		GLuint LHtexture;
 		GLuint vao, vbo;
 		int vertices;
 
-		// int n_sphere;
 		float max_magn;
+		int gammasize;
 	} mesh;
 } scene_t;
 
@@ -94,6 +94,8 @@ static void initScene(scene_t *scene)
 	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
+	scene->mesh.gammasize = upload_gamma(shorder);
+	console.log("gamma size:", scene->mesh.gammasize);
 
 	// mesh
 	console.log("loading scene...");
@@ -197,8 +199,14 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
+	// tripling tensor textures
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_a"), 11);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_b"), 12);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_c"), 13);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse_val"), 14);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);
 	// vertices
 	glBindVertexArray(scene->mesh.vao);
 	glDrawArrays(GL_TRIANGLES, 0, scene->mesh.vertices);
