@@ -227,7 +227,8 @@ static void error_callback(int error, const char *description)
 
 int main(int argc, char* argv[])
 {
-	if (argc>1) {
+	bool single_image_mode = (argc>1);
+	if (single_image_mode) {
 		console.warn("single image mode");
 	}
 	try {
@@ -289,9 +290,11 @@ int main(int argc, char* argv[])
 		m_perspective44(projection, FOV, (float)w / (float)h, 0.01f, 100.0f);
 		drawScene(&scene, view, projection);
 		// display_texture::draw();
-		ImGui::Render();
+		if (!single_image_mode) {
+			ImGui::Render();
+		}
 		glfwSwapBuffers(window);
-		if (argc>1) {
+		if (single_image_mode) {
 			saveImage("window_save.png", window);
 			break;
 		}
