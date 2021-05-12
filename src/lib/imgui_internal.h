@@ -437,7 +437,7 @@ struct ImGuiContext
     int                     LogAutoExpandMaxDepth;
 
     // Misc
-    float                   FramerateSecPerFrame[120];          // calculate estimate of framerate for user
+    float                   FramerateSecPerFrame[10];          // calculate estimate of framerate for user
     int                     FramerateSecPerFrameIdx;
     float                   FramerateSecPerFrameAccum;
     int                     CaptureMouseNextFrame;              // explicit capture via CaptureInputs() sets those flags
