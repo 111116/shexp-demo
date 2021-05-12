@@ -6,9 +6,24 @@
 - [x] avoid self-shadowing
 - [x] receiver point clustering
 - [x] blocker selection
-- [ ] ratio vector
+- [x] ratio vector
 - [X] L*H(N) cubemap (w/ windowing)
 - [x] shlog table
 - [x] sh rotation
 - [x] shexp
 
+Test at higher SH order:
+
+- change HYB to OL
+- edit shader
+- generate lut (log & OL)
+- generate sparse gamma
+- edit `shorder.hpp`
+- edit `main.cpp`
+
+Optional TODO:
+
+- optimize LHcubemap (too slow!)
+- tune $\theta_{\mathrm{max}}$
+
+test quality & framerate at different SH order & angle limit
