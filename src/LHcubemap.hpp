@@ -6,6 +6,7 @@
 void calculate_LHcubemap(const char* filename, float* data, const int size)
 // layout: SHindex, face, position, rgb
 {
+	console.time("cubemap calculation");
 	// load SH projection of environment light
 	vec3f L[N_COEFFS];
 	std::ifstream fin(filename);
@@ -21,6 +22,9 @@ void calculate_LHcubemap(const char* filename, float* data, const int size)
 		L_g.a[i] = L[i].y;
 		L_b.a[i] = L[i].z;
 	}
+	auto m_r = L_r.prodMatrix();
+	auto m_g = L_g.prodMatrix();
+	auto m_b = L_b.prodMatrix();
 	// SH-project cosine-weight function H
 	SymmSH<shorder> H([](float theta){return std::max(cosf(theta), 0.0f);});
 
@@ -46,9 +50,9 @@ void calculate_LHcubemap(const char* filename, float* data, const int size)
 				double coeffs[N_COEFFS*3];
 				vec3f N = normalized(d[face]);
 				auto HN = H.rotated(N);
-				auto L_H_r = HN * L_r;
-				auto L_H_g = HN * L_g;
-				auto L_H_b = HN * L_b;
+				auto L_H_r = m_r * HN;
+				auto L_H_g = m_g * HN;
+				auto L_H_b = m_b * HN;
 				// note that L & H can be computed at higher order than n, to obtain better accuracy
 				for(int index=0; index < N_COEFFS; ++index) {
 					data[(((index*6 + face) * size + i) * size + j) * 3 + 0] = L_H_r.a[index];
@@ -58,6 +62,7 @@ void calculate_LHcubemap(const char* filename, float* data, const int size)
 			}
 		}
 	}
+	console.timeEnd("cubemap calculation");
 }
 
 GLuint buildLHcubemap(const char* filename)
