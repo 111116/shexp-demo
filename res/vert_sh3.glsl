@@ -9,6 +9,7 @@
 // attributes
 in vec3 a_position;
 in vec3 a_normal;
+in int a_objid;
 in int a_clusterid;
 in int a_sphcnt;
 // model transform
@@ -26,6 +27,7 @@ uniform sampler2D u_sparse;
 
 uniform float max_magn;
 uniform int gammasize;
+uniform vec3 objcolor[10];
 
 
 
