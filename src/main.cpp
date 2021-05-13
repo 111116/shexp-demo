@@ -287,6 +287,8 @@ int main(int argc, char* argv[])
 	scene_t scene = {0};
 	initScene(&scene);
 	// display_texture::init();
+	auto lasttime = std::chrono::system_clock::now();
+	bool firstframe = true;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -328,6 +330,16 @@ int main(int argc, char* argv[])
 			saveImage("window_save.png", window);
 			break;
 		}
+		// framerate
+		auto now = std::chrono::system_clock::now();
+		if (firstframe) {
+			firstframe = false;
+		}
+		else {
+			std::chrono::duration<double> seconds = now - lasttime;
+			console.log("frame draw time:", seconds.count());
+		}
+		lasttime = now;
 	}
 
 	destroyScene(&scene);
