@@ -87,6 +87,7 @@ std::string readfile(const char filename[]) {
 	return sourceString;
 }
 
+m_vec3 obj_color[10] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
 
 static void initScene(scene_t *scene)
 {
@@ -213,6 +214,8 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);
+	// color
+	glUniform3fv(glGetUniformLocation(scene->mesh.program, "objcolor"), 10, &obj_color[0].x);
 	// vertices
 	glBindVertexArray(scene->mesh.vao);
 	glDrawArrays(GL_TRIANGLES, 0, scene->mesh.vertices);
