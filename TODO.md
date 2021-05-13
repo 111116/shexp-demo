@@ -11,6 +11,8 @@
 - [x] shlog table
 - [x] sh rotation
 - [x] shexp
+- [ ] area light
+- [ ] object color
 
 Test at higher SH order:
 
