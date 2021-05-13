@@ -1,3 +1,4 @@
+// this shader must be complemented with generated header!
 #define PI (3.14159265359)
 
 
