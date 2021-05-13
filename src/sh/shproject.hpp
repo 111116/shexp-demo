@@ -27,7 +27,7 @@ SymmSH<n>::SymmSH(std::function<float(float)> func, int nsample)
 template <int n>
 SH<n>::SH(sphfunc func, int nsample)
 {
-    RTcore::MT19937Sampler sampler;
+    RTcore::MT19937Sampler sampler(rand());
     double acc[n*n];
     memset(acc, 0, sizeof acc);
     float y[n*n];

@@ -14,12 +14,12 @@ void calculateLH(int n_vert, const vec3f* position, const vec3f* normal, float* 
 			std::cerr << "\r    LH progress: " << i << "/" << n_vert << "          ";
 		sphfunc LH = [&](vec3f w)
 		{
-			// Primitive::Hit h;
-			// if (!light.intersect(Ray(position[i],w), &h)) return 0.0f;
+			Primitive::Hit h;
+			if (!light.intersect(Ray(position[i],w), &h)) return 0.0f;
 			if (w.y < 0) return 0.0f;
 			return std::max(0.0f, dot(normal[i],w));
 		};
-		SH<shorder> LH_sh(LH, 100);
+		SH<shorder> LH_sh(LH, 256);
 		memcpy(LHbuffer + i*N_COEFFS, LH_sh.a, N_COEFFS * sizeof(float));
 	}
 	std::cerr << "\r    LH progress: " << n_vert << "/" << n_vert << "           \n";
