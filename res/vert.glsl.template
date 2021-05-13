@@ -1,10 +1,5 @@
-#version 410 core
-
-
 #define PI (3.14159265359)
 
-#define sh_order 10
-#define N 100
 
 // attributes
 in vec3 a_position;
@@ -33,7 +28,7 @@ uniform vec3 objcolor[10];
 
 float[N] shmul(float[N] a, float[N] b)
 {
-    float[N] g = float[N](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    float[N] g = float[N](N_ZEROS);
     for (int i=0; i<gammasize; ++i)
     {
         vec4 lookup = texture(u_sparse, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024));
@@ -115,7 +110,7 @@ float[N] shexp_PS9(float[N] f)
     float e = exp(f[0]/sqrt(4.0/PI));
     f[0] = 0;
     // product series
-    float[N] g = float[N](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    float[N] g = float[N](N_ZEROS);
     g[0] = sqrt(4.0*PI);
     float[N] a = f;
     for (int i = 1; i < 9; i++)
@@ -134,7 +129,7 @@ float[N] shexp_PS9(float[N] f)
 
 float[N] shexp(float[N] f)
 {
-    return shexp_OL(f);
+    return SHEXP_METHOD(f);
 }
 
 float[N] rotate(float[sh_order] a, vec3 w)
@@ -192,7 +187,7 @@ void main()
     gl_Position = u_projection * (u_view * vec4(a_position, 1.0));
 
 	// accumulate log(occu)
-    float[N] f = float[N](0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+    float[N] f = float[N](N_ZEROS);
 	// for all sphere blockers
     for (int i=0; i<a_sphcnt; ++i) {
         // fetch i-th sphere

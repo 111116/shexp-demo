@@ -48,13 +48,12 @@ extern "C"
 
 
 const float FOV = 30.0f;
+const char SHEXP_METHOD[] = "shexp_HYB";
 const char obj_file[] = "../res/hifreq_fixed.obj";
 const char light_obj_file[] = "../res/light.obj";
-// const char sphere_file[] = "../res/fence4-200.sph";
-// const char sphere_file[] = "../res/ball-200.sph";
 const char sphere_file[] = "../res/hifreq_scene.sph";
 const char sh_light_file[] = "../res/andi.shrgb";
-const char vert_shader_path[] = "../res/vert_sh4.glsl";
+const char vert_shader_path[] = "../res/vert.glsl.template";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
@@ -192,7 +191,15 @@ static void initScene(scene_t *scene)
 		"a_clusterid",
 		"a_sphcnt"
 	};
-	scene->mesh.program = s_loadProgram(readfile(vert_shader_path).c_str(), readfile(frag_shader_path).c_str(), attribs, 5);
+	std::string N_ZEROS = "0";
+	for (int i=1; i<N_COEFFS; ++i)
+		N_ZEROS = N_ZEROS + ",0";
+	std::string vert_head = "#version 410 core\n"
+	"#define sh_order " + std::to_string(shorder) + "\n"
+	"#define N " + std::to_string(shorder * shorder) + "\n"
+	"#define N_ZEROS " + N_ZEROS + "\n"
+	"#define SHEXP_METHOD " + SHEXP_METHOD + "\n";
+	scene->mesh.program = s_loadProgram((vert_head + readfile(vert_shader_path)).c_str(), readfile(frag_shader_path).c_str(), attribs, 5);
 	if (!scene->mesh.program)
 		throw "Error loading mesh shader";
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");
