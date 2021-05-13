@@ -38,17 +38,18 @@ extern "C"
 
 #include "consolelog.hpp"
 #include "sh/sh.hpp"
-#include "LHcubemap.hpp"
 #include "loadlut.hpp"
 #include "loadspheres.hpp"
 #include "loadgamma.hpp"
 #include "shlut.hpp"
 #include "display_texture.hpp"
 #include "receiver_cluster.hpp"
+#include "arealight.hpp"
 
 
 const float FOV = 30.0f;
 const char obj_file[] = "../res/hifreq_fixed.obj";
+const char light_obj_file[] = "../res/light.obj";
 // const char sphere_file[] = "../res/fence4-200.sph";
 // const char sphere_file[] = "../res/ball-200.sph";
 const char sphere_file[] = "../res/hifreq_scene.sph";
@@ -58,7 +59,8 @@ const char vert_shader_path[] = "../res/vert_sh3.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
-
+m_vec3 obj_color[10] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
+m_vec3 light_color = {1,1,1};
 
 typedef struct
 {
@@ -87,12 +89,10 @@ std::string readfile(const char filename[]) {
 	return sourceString;
 }
 
-m_vec3 obj_color[10] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
 
 static void initScene(scene_t *scene)
 {
 	SphereTree hierarchy = load_sphere_hierarchy(sphere_file);
-	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 	scene->mesh.gammasize = upload_gamma(shorder);
@@ -115,11 +115,14 @@ static void initScene(scene_t *scene)
 	int *objids       = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	int *clusterids   = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	int *sphcnt   = (int*)calloc(scene->mesh.vertices, sizeof(int));
+	float *LH = (float*)calloc(scene->mesh.vertices, N_COEFFS * sizeof(float));
+	// total size of each attribute
 	size_t positionsSize = scene->mesh.vertices * sizeof(m_vec3);
 	size_t normalsSize   = scene->mesh.vertices * sizeof(m_vec3);
 	size_t objidsSize    = scene->mesh.vertices * sizeof(int);
 	size_t clusteridsSize   = scene->mesh.vertices * sizeof(int);
 	size_t sphcntSize   = scene->mesh.vertices * sizeof(int);
+	size_t LHSize = scene->mesh.vertices * N_COEFFS * sizeof(float);
 
 	// fill positions & normals from scene
 	int n = 0;
@@ -138,6 +141,10 @@ static void initScene(scene_t *scene)
 	// cluster receiver
 	cluster_points(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids);
 	cluster_preprocess(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids, hierarchy, sphcnt);
+	// preprocess lighting
+	calculateLH(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), reinterpret_cast<vec3f*>(normals), LH, light_obj_file);
+	// because openGL doesn't support array as attribute, we upload it as texture
+	uploadLH(scene->mesh.vertices, LH);
 
 	console.log("renderer initializing...");
 	// upload geometry to opengl
@@ -175,6 +182,7 @@ static void initScene(scene_t *scene)
 	free(objids);
 	free(clusterids);
 	free(sphcnt);
+	free(LH);
 
 	const char *attribs[] =
 	{
@@ -204,13 +212,13 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
 	// textures
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sh_lut"), 3);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 0);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);
