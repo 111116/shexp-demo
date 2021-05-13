@@ -255,6 +255,8 @@ static void error_callback(int error, const char *description)
 
 int main(int argc, char* argv[])
 {
+    console.info("SH order:", shorder);
+    console.info("shexp method:", SHEXP_METHOD);
 	bool single_image_mode = (argc>1);
 	if (single_image_mode) {
 		console.warn("single image mode");
