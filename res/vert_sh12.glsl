@@ -9,6 +9,7 @@
 // attributes
 in vec3 a_position;
 in vec3 a_normal;
+in int a_objid;
 in int a_clusterid;
 in int a_sphcnt;
 // model transform
@@ -26,6 +27,7 @@ uniform sampler2D u_sparse;
 
 uniform float max_magn;
 uniform int gammasize;
+uniform vec3 objcolor[10];
 
 
 
@@ -238,6 +240,6 @@ void main()
     vec3 result = shdot(g, LH);
     // L_H dot product with SH_one, yields the integral of L_H
 
-    result = 1.0 / PI * result; // times brdf
+    result = 1.0 / PI * objcolor[a_objid] * result; // times brdf
     color = result;
 }
