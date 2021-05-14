@@ -38,28 +38,33 @@ extern "C"
 
 #include "consolelog.hpp"
 #include "sh/sh.hpp"
-#include "LHcubemap.hpp"
 #include "loadlut.hpp"
 #include "loadspheres.hpp"
 #include "loadgamma.hpp"
 #include "shlut.hpp"
 #include "display_texture.hpp"
 #include "receiver_cluster.hpp"
+#include "arealight.hpp"
+#include "LHcubemap.hpp"
 
 
 const float FOV = 30.0f;
 const char SHEXP_METHOD[] = "shexp_HYB";
+// scene models
 const char obj_file[] = "../res/hifreq_fixed.obj";
-// const char sphere_file[] = "../res/fence4-200.sph";
-// const char sphere_file[] = "../res/ball-200.sph";
 const char sphere_file[] = "../res/hifreq_scene.sph";
+// lighting
+const bool obj_light_enabled = true;
+const char obj_light_file[] = "../res/light.obj";
 const char sh_light_file[] = "../res/andi.shrgb";
+// shaders
 const char vert_shader_path[] = "../res/vert.glsl";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
-
+m_vec3 obj_color[10] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
+m_vec3 light_color = {1,1,1};
 
 typedef struct
 {
@@ -88,7 +93,6 @@ std::string readfile(const char filename[]) {
 	return sourceString;
 }
 
-m_vec3 obj_color[10] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
 
 static void initScene(scene_t *scene)
 {
@@ -116,11 +120,14 @@ static void initScene(scene_t *scene)
 	int *objids       = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	int *clusterids   = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	int *sphcnt   = (int*)calloc(scene->mesh.vertices, sizeof(int));
+	float *LH = (float*)calloc(scene->mesh.vertices, N_COEFFS * sizeof(float));
+	// total size of each attribute
 	size_t positionsSize = scene->mesh.vertices * sizeof(m_vec3);
 	size_t normalsSize   = scene->mesh.vertices * sizeof(m_vec3);
 	size_t objidsSize    = scene->mesh.vertices * sizeof(int);
 	size_t clusteridsSize   = scene->mesh.vertices * sizeof(int);
 	size_t sphcntSize   = scene->mesh.vertices * sizeof(int);
+	size_t LHSize = scene->mesh.vertices * N_COEFFS * sizeof(float);
 
 	// fill positions & normals from scene
 	int n = 0;
@@ -139,6 +146,13 @@ static void initScene(scene_t *scene)
 	// cluster receiver
 	cluster_points(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids);
 	cluster_preprocess(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids, hierarchy, sphcnt);
+	// preprocess lighting
+	if (obj_light_enabled)
+		calculateLH(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), reinterpret_cast<vec3f*>(normals), LH, obj_light_file);
+	else
+		memset(LH, 0, LHSize);
+	// because openGL doesn't support array as attribute, we upload it as texture
+	uploadLH(scene->mesh.vertices, LH);
 
 	console.log("renderer initializing...");
 	// upload geometry to opengl
@@ -176,6 +190,7 @@ static void initScene(scene_t *scene)
 	free(objids);
 	free(clusterids);
 	free(sphcnt);
+	free(LH);
 
 	const char *attribs[] =
 	{
@@ -186,13 +201,13 @@ static void initScene(scene_t *scene)
 		"a_sphcnt"
 	};
 	std::string N_ZEROS = "0";
-    for (int i=1; i<N_COEFFS; ++i)
-        N_ZEROS = N_ZEROS + ",0";
-    std::string vert_head = "#version 410 core\n"
-    "#define sh_order " + std::to_string(shorder) + "\n"
-    "#define N " + std::to_string(shorder * shorder) + "\n"
-    "#define N_ZEROS " + N_ZEROS + "\n"
-    "#define SHEXP_METHOD " + SHEXP_METHOD + "\n";
+	for (int i=1; i<N_COEFFS; ++i)
+		N_ZEROS = N_ZEROS + ",0";
+	std::string vert_head = "#version 410 core\n"
+	"#define sh_order " + std::to_string(shorder) + "\n"
+	"#define N " + std::to_string(shorder * shorder) + "\n"
+	"#define N_ZEROS " + N_ZEROS + "\n"
+	"#define SHEXP_METHOD " + SHEXP_METHOD + "\n";
 	scene->mesh.program = s_loadProgram((vert_head + readfile(vert_shader_path)).c_str(), readfile(frag_shader_path).c_str(), attribs, 5);
 	if (!scene->mesh.program)
 		throw "Error loading mesh shader";
@@ -213,13 +228,14 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniformMatrix4fv(scene->mesh.u_projection, 1, GL_FALSE, projection);
 	glUniformMatrix4fv(scene->mesh.u_view, 1, GL_FALSE, view);
 	// textures
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sh_lut"), 3);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_log_lut"), 1);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ab_lut"), 2);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 8);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);
@@ -281,6 +297,8 @@ int main(int argc, char* argv[])
 	scene_t scene = {0};
 	initScene(&scene);
 	// display_texture::init();
+	auto lasttime = std::chrono::system_clock::now();
+	bool firstframe = true;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -322,6 +340,16 @@ int main(int argc, char* argv[])
 			saveImage("window_save.png", window);
 			break;
 		}
+		// framerate
+		auto now = std::chrono::system_clock::now();
+		if (firstframe) {
+			firstframe = false;
+		}
+		else {
+			std::chrono::duration<double> seconds = now - lasttime;
+			// console.log("frame draw time:", seconds.count());
+		}
+		lasttime = now;
 	}
 
 	destroyScene(&scene);
