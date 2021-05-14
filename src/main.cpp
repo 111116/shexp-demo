@@ -45,6 +45,7 @@ extern "C"
 #include "display_texture.hpp"
 #include "receiver_cluster.hpp"
 #include "arealight.hpp"
+#include "LHcubemap.hpp"
 
 
 const float FOV = 30.0f;
@@ -96,6 +97,7 @@ std::string readfile(const char filename[]) {
 static void initScene(scene_t *scene)
 {
 	SphereTree hierarchy = load_sphere_hierarchy(sphere_file);
+	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 	scene->mesh.gammasize = upload_gamma(shorder);
@@ -233,6 +235,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 8);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);

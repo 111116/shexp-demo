@@ -19,6 +19,7 @@ uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, 
 uniform sampler2D u_sphere; // 1024x1024 texture of sphere (center, radius)
 uniform sampler2DArray u_ratio; // sh_order x 1024x1024 texture of ratio
 uniform sampler2DArray u_LH; // sh_order x 1024x1024 texture of per-vertex L*H (cosine-weighted lighting)
+uniform samplerCubeArray u_LHcubemap; // (dir, SHindex(l,m)) => L*H(dir), where L is environment light and H is cosine-weighted hemisphere
 uniform sampler2D u_sparse;
 
 uniform float max_magn;
@@ -174,11 +175,12 @@ vec4 texlookup(sampler2D tex, int i)
     return texture(tex, vec2((column+0.5f)/1024, (row+0.5f)/64));
 }
 
-float[N] getLH()
+vec3[N] getLH()
 {
-    float[N] res;
+    vec3[N] res;
     for (int i=0; i<N; ++i)
-        res[i] = texture(u_LH, vec3((gl_VertexID%1024+0.5f)/1024, (gl_VertexID/1024+0.5f)/1024, i)).x;
+        res[i] = texture(u_LH, vec3((gl_VertexID%1024+0.5f)/1024, (gl_VertexID/1024+0.5f)/1024, i)).x * vec3(1,1,1)
+               + texture(u_LHcubemap, vec4(a_normal.xzy,i)).rgb;
     return res;
 }
 
@@ -238,7 +240,7 @@ void main()
     }
     float[N] g = shexp(f);
 
-    vec3 result = shdot(g, getLH()) * vec3(1,1,1);
+    vec3 result = shdot(g, getLH());
     // L_H dot product with SH_one, yields the integral of L_H
 
     result = 1.0 / PI * objcolor[a_objid] * result; // times brdf
