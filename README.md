@@ -36,6 +36,8 @@ To change scene configuration / SHEXP algorithm, edit `main.cpp`
 
 `util/makelut` precompute shlog of visibility functions & corresponding shexp OL coefficients.
 
+`gamma/src/makesparse` tabulate SH tripling tensor
+
 `github.com/111116/sphere-set-approximation` generate sphere representation of object.
 
 
