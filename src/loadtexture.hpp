@@ -38,13 +38,18 @@ GLuint create_2D_float_texture_array(int width, int height, int n_layer, float* 
 	return texture;
 }
 
-void upload_albedo_map(const char* filename)
+void upload_albedo_map(int n, const std::string filename[])
 {
+	if (n==0) throw "object list must not be empty";
 	int width, height, nrChannels;
-	float *data = stbi_loadf(filename, &width, &height, &nrChannels, 3);
-	if (!data || nrChannels!=3)
-		throw "load texture image failed";
-	glActiveTexture(GL_TEXTURE20);
-	create_2D_float_texture(width, height, 3, data, GL_LINEAR, true);
-	stbi_image_free(data);
+	float alldata = new float[1024 * 1024 * 3 * n];
+	for (int i=0; i<n; ++i)
+	{
+		float *data = stbi_loadf(filename, &width, &height, &nrChannels, 3);
+		if (!data || nrChannels!=3)
+			throw "load texture image failed";
+		stbi_image_free(data);
+	}
+		glActiveTexture(GL_TEXTURE20);
+		create_2D_float_texture(width, height, 3, data, GL_LINEAR, true);
 }
