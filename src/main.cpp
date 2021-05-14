@@ -49,10 +49,14 @@ extern "C"
 
 const float FOV = 30.0f;
 const char SHEXP_METHOD[] = "shexp_HYB";
+// scene models
 const char obj_file[] = "../res/hifreq_fixed.obj";
-const char light_obj_file[] = "../res/light.obj";
 const char sphere_file[] = "../res/hifreq_scene.sph";
+// lighting
+const bool obj_light_enabled = true;
+const char obj_light_file[] = "../res/light.obj";
 const char sh_light_file[] = "../res/andi.shrgb";
+// shaders
 const char vert_shader_path[] = "../res/vert.glsl";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
@@ -141,7 +145,10 @@ static void initScene(scene_t *scene)
 	cluster_points(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids);
 	cluster_preprocess(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), clusterids, hierarchy, sphcnt);
 	// preprocess lighting
-	calculateLH(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), reinterpret_cast<vec3f*>(normals), LH, light_obj_file);
+	if (obj_light_enabled)
+		calculateLH(scene->mesh.vertices, reinterpret_cast<vec3f*>(positions), reinterpret_cast<vec3f*>(normals), LH, obj_light_file);
+	else
+		memset(LH, 0, LHSize);
 	// because openGL doesn't support array as attribute, we upload it as texture
 	uploadLH(scene->mesh.vertices, LH);
 
@@ -337,7 +344,7 @@ int main(int argc, char* argv[])
 		}
 		else {
 			std::chrono::duration<double> seconds = now - lasttime;
-			console.log("frame draw time:", seconds.count());
+			// console.log("frame draw time:", seconds.count());
 		}
 		lasttime = now;
 	}
