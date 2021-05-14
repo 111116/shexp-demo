@@ -49,7 +49,7 @@ extern "C"
 #include "loadtexture.hpp"
 
 const int MAX_N_SHAPE = 10;
-const float FOV = 30.0f;
+const float FOV = 15.0f;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
 const char obj_file[] = "../res/andi1.obj";
@@ -66,8 +66,8 @@ const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
 m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
-bool enable_texture[MAX_N_SHAPE] = {0,0,1,0};
-m_vec3 light_color = {1,1,1};
+bool enable_texture[MAX_N_SHAPE] = {0,0,0,0};
+m_vec3 light_color = {4,4,4};
 
 typedef struct
 {
