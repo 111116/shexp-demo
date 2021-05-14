@@ -252,6 +252,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 8);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "albedo_map"), 20);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);

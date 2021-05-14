@@ -15,7 +15,6 @@ void main()
     t = pow(t, vec3(1.0/gamma));
     // objects without texture are marked with texcoord (-1,-1)
     if (texcoord != vec2(-1,-1))
-    	t = vec3(1,1,0);
-    	// t *= texture(albedo_map, texcoord).xyz;
+    	t *= texture(albedo_map, texcoord).xyz;
     o_color = vec4(t, 1.0);
 }
