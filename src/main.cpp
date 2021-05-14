@@ -46,24 +46,27 @@ extern "C"
 #include "receiver_cluster.hpp"
 #include "arealight.hpp"
 #include "LHcubemap.hpp"
+#include "loadtexture.hpp"
 
-
+const int MAX_N_SHAPE = 10;
 const float FOV = 30.0f;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
 const char obj_file[] = "../res/hifreq_fixed.obj";
 const char sphere_file[] = "../res/hifreq_scene.sph";
+const char texture_file[] = "../res/texture.png";
 // lighting
 const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/light.obj";
-const char sh_light_file[] = "../res/andi.shrgb";
+const char sh_light_file[] = "../res/null.shrgb";
 // shaders
 const char vert_shader_path[] = "../res/vert.glsl";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
-m_vec3 obj_color[10] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
+m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
+bool enable_texture[MAX_N_SHAPE] = {0,0,0,0};
 m_vec3 light_color = {1,1,1};
 
 typedef struct
@@ -99,6 +102,7 @@ static void initScene(scene_t *scene)
 	SphereTree hierarchy = load_sphere_hierarchy(sphere_file);
 	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
+	upload_albedo_map(texture_file);
 	build_sh_lut();
 	scene->mesh.gammasize = upload_gamma(shorder);
 	console.log("gamma size:", scene->mesh.gammasize);
@@ -116,28 +120,37 @@ static void initScene(scene_t *scene)
 
 	// alloc host space for attributes
 	m_vec3 *positions = (m_vec3*)calloc(scene->mesh.vertices, sizeof(m_vec3));
+	m_vec2 *texcoords = (m_vec2*)calloc(scene->mesh.vertices, sizeof(m_vec2));
 	m_vec3 *normals   = (m_vec3*)calloc(scene->mesh.vertices, sizeof(m_vec3));
 	int *objids       = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	int *clusterids   = (int*)calloc(scene->mesh.vertices, sizeof(int));
 	int *sphcnt   = (int*)calloc(scene->mesh.vertices, sizeof(int));
+	// Note: LH isn't uploaded as vertex attribute
 	float *LH = (float*)calloc(scene->mesh.vertices, N_COEFFS * sizeof(float));
 	// total size of each attribute
-	size_t positionsSize = scene->mesh.vertices * sizeof(m_vec3);
-	size_t normalsSize   = scene->mesh.vertices * sizeof(m_vec3);
-	size_t objidsSize    = scene->mesh.vertices * sizeof(int);
-	size_t clusteridsSize   = scene->mesh.vertices * sizeof(int);
-	size_t sphcntSize   = scene->mesh.vertices * sizeof(int);
-	size_t LHSize = scene->mesh.vertices * N_COEFFS * sizeof(float);
+	size_t positionsSize  = scene->mesh.vertices * sizeof(m_vec3);
+	size_t texcoordsSize  = scene->mesh.vertices * sizeof(m_vec2);
+	size_t normalsSize    = scene->mesh.vertices * sizeof(m_vec3);
+	size_t objidsSize     = scene->mesh.vertices * sizeof(int);
+	size_t clusteridsSize = scene->mesh.vertices * sizeof(int);
+	size_t sphcntSize     = scene->mesh.vertices * sizeof(int);
+	size_t LHSize         = scene->mesh.vertices * N_COEFFS * sizeof(float);
 
 	// fill positions & normals from scene
 	int n = 0;
 	for (int i = 0; i < yo->nshapes; i++)
 	{
 		yo_shape *shape = yo->shapes + i;
+		if (enable_texture[i] && !shape->texcoord)
+			console.error("Shape",i,"is texture-enabled but has no texcoord");
 		for (int j = 0; j < shape->nelems * 3; j++)
 		{
 			positions[n + j] = *(m_vec3*)&shape->pos[shape->elem[j] * 3];
 			normals[n + j] = *(m_vec3*)&shape->norm[shape->elem[j] * 3];
+			if (enable_texture[i])
+				texcoords[n + j] = *(m_vec2*)&shape->texcoord[shape->elem[j] * 2];
+			else
+				texcoords[n + j] = m_vec2{-1,-1};
 			objids[n + j] = i;
 		}
 		n += shape->nelems * 3;
@@ -161,28 +174,30 @@ static void initScene(scene_t *scene)
 	// upload attribute data
 	glGenBuffers(1, &scene->mesh.vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, scene->mesh.vbo);
-	glBufferData(GL_ARRAY_BUFFER, positionsSize + normalsSize + objidsSize + clusteridsSize + sphcntSize, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, positionsSize + texcoordsSize + normalsSize + objidsSize + clusteridsSize + sphcntSize, NULL, GL_STATIC_DRAW);
 	unsigned char *buffer = (unsigned char*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	assert(buffer);
 	memcpy(buffer, positions, positionsSize);
-	memcpy(buffer + positionsSize, objids, objidsSize);
-	memcpy(buffer + positionsSize, normals, normalsSize);
-	memcpy(buffer + positionsSize + normalsSize, objids, objidsSize);
-	memcpy(buffer + positionsSize + normalsSize + objidsSize, clusterids, clusteridsSize);
-	memcpy(buffer + positionsSize + normalsSize + objidsSize + clusteridsSize, sphcnt, sphcntSize);
+	memcpy(buffer + positionsSize, texcoords, texcoordsSize);
+	memcpy(buffer + positionsSize + texcoordsSize, normals, normalsSize);
+	memcpy(buffer + positionsSize + texcoordsSize + normalsSize, objids, objidsSize);
+	memcpy(buffer + positionsSize + texcoordsSize + normalsSize + objidsSize, clusterids, clusteridsSize);
+	memcpy(buffer + positionsSize + texcoordsSize + normalsSize + objidsSize + clusteridsSize, sphcnt, sphcntSize);
 	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	// set attribute pointers
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)positionsSize);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)positionsSize);
 	glEnableVertexAttribArray(2);
-	glVertexAttribIPointer(2, 1, GL_INT, 0, (void*)(positionsSize + normalsSize));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(positionsSize + texcoordsSize));
 	glEnableVertexAttribArray(3);
-	glVertexAttribIPointer(3, 1, GL_INT, 0, (void*)(positionsSize + normalsSize + objidsSize));
+	glVertexAttribIPointer(3, 1, GL_INT, 0, (void*)(positionsSize + texcoordsSize + normalsSize));
 	glEnableVertexAttribArray(4);
-	glVertexAttribIPointer(4, 1, GL_INT, 0, (void*)(positionsSize + normalsSize + objidsSize + clusteridsSize));
+	glVertexAttribIPointer(4, 1, GL_INT, 0, (void*)(positionsSize + texcoordsSize + normalsSize + objidsSize));
+	glEnableVertexAttribArray(5);
+	glVertexAttribIPointer(5, 1, GL_INT, 0, (void*)(positionsSize + texcoordsSize + normalsSize + objidsSize + clusteridsSize));
 
 	// free host space
 	free(positions);
@@ -195,6 +210,7 @@ static void initScene(scene_t *scene)
 	const char *attribs[] =
 	{
 		"a_position",
+		"a_texcoord",
 		"a_normal",
 		"a_objid",
 		"a_clusterid",
@@ -208,7 +224,7 @@ static void initScene(scene_t *scene)
 	"#define N " + std::to_string(shorder * shorder) + "\n"
 	"#define N_ZEROS " + N_ZEROS + "\n"
 	"#define SHEXP_METHOD " + SHEXP_METHOD + "\n";
-	scene->mesh.program = s_loadProgram((vert_head + readfile(vert_shader_path)).c_str(), readfile(frag_shader_path).c_str(), attribs, 5);
+	scene->mesh.program = s_loadProgram((vert_head + readfile(vert_shader_path)).c_str(), readfile(frag_shader_path).c_str(), attribs, 6);
 	if (!scene->mesh.program)
 		throw "Error loading mesh shader";
 	scene->mesh.u_view = glGetUniformLocation(scene->mesh.program, "u_view");

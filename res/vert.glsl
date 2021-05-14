@@ -4,6 +4,7 @@
 
 // attributes
 in vec3 a_position;
+in vec2 a_texcoord;
 in vec3 a_normal;
 in int a_objid;
 in int a_clusterid;
@@ -12,6 +13,7 @@ in int a_sphcnt;
 uniform mat4 u_view;
 uniform mat4 u_projection;
 
+out vec2 texcoord;
 out vec3 color; // linear color (radiance)
 uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH basis (l,m) at dir
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
@@ -188,6 +190,7 @@ vec3[N] getLH()
 void main()
 {
     gl_Position = u_projection * (u_view * vec4(a_position, 1.0));
+    texcoord = a_texcoord;
 
 	// accumulate log(occu)
     float[N] f = float[N](N_ZEROS);
