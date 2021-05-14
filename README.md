@@ -1,8 +1,8 @@
-# Spherical Harmonics Playground
+# Spherical Harmonics Exponentiation
 
-Implementation of *Real-time Soft Shadows in Dynamic Scenes using Spherical Harmonic Exponentiation*.
+Implementation of *Real-time Soft Shadows in Dynamic Scenes using Spherical Harmonic Exponentiation*. Supports static scene of diffuse objects and area / environment light.
 
-
+### Build & Run
 
 Linux dependencies for glfw: xorg-dev libgl1-mesa-dev
 
@@ -26,8 +26,17 @@ output single image then quit
 ./playground -s
 ```
 
+To test at different SH order, edit `shorder.hpp`
 
-n=6: ~6fps
-n=7: ~2.7fps
-n=8: doesn't load
+To change scene configuration / SHEXP algorithm, edit `main.cpp`
+
+### Preprocess tools
+
+`util/envmap` project θ-φ parameterized light probe image onto SH bases.
+
+`util/makelut` precompute shlog of visibility functions & corresponding shexp OL coefficients.
+
+`github.com/111116/sphere-set-approximation` generate sphere representation of object.
+
+
 

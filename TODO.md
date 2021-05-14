@@ -11,21 +11,8 @@
 - [x] shlog table
 - [x] sh rotation
 - [x] shexp
-- [ ] area light
-- [ ] object color
-
-Test at higher SH order:
-
-- change HYB to OL
-- edit shader
-- generate lut (log & OL)
-- generate sparse gamma
-- edit `shorder.hpp`
-- edit `main.cpp`
-
-Optional TODO:
-
-- optimize LHcubemap (too slow!)
-- tune $\theta_{\mathrm{max}}$
+- [x] area light
+- [x] object color
+- [x] texture
 
 test quality & framerate at different SH order & angle limit
