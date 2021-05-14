@@ -232,7 +232,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
-	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 0);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 8);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);
