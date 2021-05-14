@@ -183,7 +183,7 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	}
 	// build texture
 	glActiveTexture(GL_TEXTURE4);
-	create_2D_vec4_texture(texwidth, texheight, sphdata, GL_NEAREST);
+	create_2D_float_texture(texwidth, texheight, 4, sphdata, GL_NEAREST);
 	glActiveTexture(GL_TEXTURE5);
 	create_2D_float_texture_array(texwidth, texheight, shorder, ratiodata, GL_NEAREST);
 	delete[] sphdata;

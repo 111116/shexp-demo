@@ -18,7 +18,7 @@ int upload_gamma(int n)
 		data[i*4+3] = v[i].val;
 	}
 	glActiveTexture(GL_TEXTURE15);
-	create_2D_vec4_texture(1024, 1024, data, GL_NEAREST);
+	create_2D_float_texture(1024, 1024, 4, data, GL_NEAREST);
 	delete[] data;
 	return v.size();
 }

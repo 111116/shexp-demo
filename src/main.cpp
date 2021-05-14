@@ -56,7 +56,7 @@ const char obj_file[] = "../res/hifreq_fixed.obj";
 const char sphere_file[] = "../res/hifreq_scene.sph";
 const char texture_file[] = "../res/texture.png";
 // lighting
-const bool obj_light_enabled = true;
+const bool obj_light_enabled = false;
 const char obj_light_file[] = "../res/light.obj";
 const char sh_light_file[] = "../res/andi.shrgb";
 // shaders
@@ -252,6 +252,7 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 8);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "albedo_map"), 20);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);

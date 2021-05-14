@@ -1,6 +1,6 @@
 #pragma once
 
-GLuint create_2D_vec4_texture(int width, int height, const float* data, GLint sample_method, bool gen_mipmap = false)
+GLuint create_2D_float_texture(int width, int height, int n_channel, const float* data, GLint sample_method, bool gen_mipmap = false)
 {
 	// create & bind a named texture
 	GLuint texture;
@@ -12,26 +12,11 @@ GLuint create_2D_vec4_texture(int width, int height, const float* data, GLint sa
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	// generate the texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
+	if (n_channel==1) glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, data);
+	if (n_channel==3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, data);
+	if (n_channel==4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
 	if (gen_mipmap)
 		glGenerateMipmap(GL_TEXTURE_2D);
-	return texture;
-}
-
-GLuint create_2D_float_texture(int width, int height, const float* data, GLint sample_method)
-{
-	// create & bind a named texture
-	GLuint texture;
-	glGenTextures(1, &texture);  
-	glBindTexture(GL_TEXTURE_2D, texture);
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sample_method);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sample_method);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	// generate the texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, data);
-	// glGenerateMipmap(GL_TEXTURE_2D);
 	return texture;
 }
 
@@ -60,6 +45,6 @@ void upload_albedo_map(const char* filename)
 	if (!data || nrChannels!=3)
 		throw "load texture image failed";
 	glActiveTexture(GL_TEXTURE20);
-	create_2D_vec4_texture(width, height, data, GL_LINEAR, true);
+	create_2D_float_texture(width, height, 3, data, GL_LINEAR, true);
 	stbi_image_free(data);
 }

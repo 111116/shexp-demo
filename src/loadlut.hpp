@@ -51,8 +51,8 @@ void loadlut(int n, float& maxmagn)
 	}
 	// build textures
 	glActiveTexture(GL_TEXTURE1);
-	create_2D_float_texture(n, n_entry, log_lut, GL_LINEAR);
+	create_2D_float_texture(n, n_entry, 1, log_lut, GL_LINEAR);
 	glActiveTexture(GL_TEXTURE2);
-	create_2D_float_texture(2, n_entry, ab_lut, GL_LINEAR);
+	create_2D_float_texture(2, n_entry, 1, ab_lut, GL_LINEAR);
 }
 
