@@ -52,21 +52,21 @@ const int MAX_N_SHAPE = 10;
 const float FOV = 30.0f;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
-const char obj_file[] = "../res/hifreq_fixed.obj";
-const char sphere_file[] = "../res/hifreq_scene.sph";
+const char obj_file[] = "../res/andi1.obj";
+const char sphere_file[] = "../res/andi1.sph";
 const char texture_file[] = "../res/texture.png";
 // lighting
-const bool obj_light_enabled = false;
+const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/light.obj";
-const char sh_light_file[] = "../res/andi.shrgb";
+const char sh_light_file[] = "../res/null.shrgb";
 // shaders
 const char vert_shader_path[] = "../res/vert.glsl";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
 const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
-m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{0.5,1,0.5},{1,0,0},{0,0,1}};
-bool enable_texture[MAX_N_SHAPE] = {0,0,0,0};
+m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
+bool enable_texture[MAX_N_SHAPE] = {0,0,1,0};
 m_vec3 light_color = {1,1,1};
 
 typedef struct
