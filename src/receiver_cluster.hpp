@@ -185,7 +185,7 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	glActiveTexture(GL_TEXTURE4);
 	create_2D_float_texture(texwidth, texheight, 4, sphdata, GL_NEAREST);
 	glActiveTexture(GL_TEXTURE5);
-	create_2D_float_texture_array(texwidth, texheight, shorder, ratiodata, GL_NEAREST);
+	create_2D_float_texture_array(texwidth, texheight, 1, shorder, ratiodata, GL_NEAREST);
 	delete[] sphdata;
 	delete[] ratiodata;
 	// assign sphere count of each vertex

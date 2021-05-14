@@ -65,8 +65,8 @@ const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
 m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
-bool enable_texture[MAX_N_SHAPE] = {0,0,1,0};
-std::string texture_file = {"floor.png","floor.png","floor.png","table.png"};
+bool enable_texture[MAX_N_SHAPE] = {0,0,1,1};
+std::string texture_file[MAX_N_SHAPE] = {"../res/floor.jpg","../res/floor.jpg","../res/floor.jpg","../res/table.jpg"};
 m_vec3 light_color = {4,4,4};
 
 typedef struct

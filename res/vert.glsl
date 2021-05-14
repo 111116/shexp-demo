@@ -15,6 +15,7 @@ uniform mat4 u_projection;
 
 out vec2 texcoord;
 out vec3 color; // linear color (radiance)
+flat out int objid;
 uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH basis (l,m) at dir
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
 uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, needs to be converted to be function of magnitude
@@ -191,6 +192,7 @@ void main()
 {
     gl_Position = u_projection * (u_view * vec4(a_position, 1.0));
     texcoord = a_texcoord;
+    objid = a_objid;
 
 	// accumulate log(occu)
     float[N] f = float[N](N_ZEROS);
