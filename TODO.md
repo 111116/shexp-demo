@@ -14,5 +14,7 @@
 - [x] area light
 - [x] object color
 - [x] texture
+- [ ] fix vertex multi-instancing
+- [ ] multi-texture
 
 test quality & framerate at different SH order & angle limit
