@@ -3,7 +3,8 @@
 #include "shorder.hpp"
 #include "rt/trianglemesh.hpp"
 #include "rt/samplers/mt19937sampler.hpp"
-#include "receiver_cluster.hpp" // create_2D_float_texture_array
+#include "loadtexture.hpp"
+
 
 void calculateLH(int n_vert, const vec3f* position, const vec3f* normal, float* LHbuffer, const char light_obj_file[])
 {
@@ -51,6 +52,6 @@ void uploadLH(int n_vert, const float* buffer)
 		for (int j=0; j<N_COEFFS; ++j)
 			texdata[j*1024*1024+i] = buffer[i*N_COEFFS+j];
 	glActiveTexture(GL_TEXTURE8);
-	create_2D_float_texture_array(1024, 1024, N_COEFFS, texdata);
+	create_2D_float_texture_array(1024, 1024, N_COEFFS, texdata, GL_NEAREST);
 	delete[] texdata;
 }

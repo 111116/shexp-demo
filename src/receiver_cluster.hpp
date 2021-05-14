@@ -7,6 +7,7 @@
 #include "consolelog.hpp"
 #include "mock_shexp.hpp"
 #include "shorder.hpp"
+#include "loadtexture.hpp"
 
 const char cluster_file[] = "cluster.cache";
 
@@ -79,41 +80,6 @@ void cluster_points_recalculate(int n, int n_cluster, const vec3f* positions, in
 
 
 
-GLuint create_2D_vec4_texture(int width, int height, const float* data)
-{
-	// create & bind a named texture
-	GLuint texture;
-	glGenTextures(1, &texture);  
-	glBindTexture(GL_TEXTURE_2D, texture);
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	// we use nestest interpolation since this texture is used for data retrieval
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	// generate the texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, data);
-	// glGenerateMipmap(GL_TEXTURE_2D);
-	return texture;
-}
-
-GLuint create_2D_float_texture_array(int width, int height, int n_layer, float* data)
-{
-	// create & bind a named texture
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	// we use nestest interpolation since this texture is used for data retrieval
-	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	// generate the texture
-	glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_R32F, width, height, n_layer, 0, GL_RED, GL_FLOAT, data);
-	return texture;
-}
 
 std::vector<Sphere> treecut(const SphereTree& hierarchy, vec3f cluster_center, float cluster_radius, float angle_limit)
 {
@@ -217,9 +183,9 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	}
 	// build texture
 	glActiveTexture(GL_TEXTURE4);
-	create_2D_vec4_texture(texwidth, texheight, sphdata);
+	create_2D_vec4_texture(texwidth, texheight, sphdata, GL_NEAREST);
 	glActiveTexture(GL_TEXTURE5);
-	create_2D_float_texture_array(texwidth, texheight, shorder, ratiodata);
+	create_2D_float_texture_array(texwidth, texheight, shorder, ratiodata, GL_NEAREST);
 	delete[] sphdata;
 	delete[] ratiodata;
 	// assign sphere count of each vertex

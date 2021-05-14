@@ -1,6 +1,7 @@
 #pragma once
 
-#include "receiver_cluster.hpp"
+#include "shorder.hpp"
+#include "loadtexture.hpp"
 
 
 int upload_gamma(int n)
@@ -17,7 +18,7 @@ int upload_gamma(int n)
 		data[i*4+3] = v[i].val;
 	}
 	glActiveTexture(GL_TEXTURE15);
-	create_2D_vec4_texture(1024, 1024, data);
+	create_2D_vec4_texture(1024, 1024, data, GL_NEAREST);
 	delete[] data;
 	return v.size();
 }
