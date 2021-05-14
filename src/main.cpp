@@ -56,9 +56,9 @@ const char obj_file[] = "../res/hifreq_fixed.obj";
 const char sphere_file[] = "../res/hifreq_scene.sph";
 const char texture_file[] = "../res/texture.png";
 // lighting
-const bool obj_light_enabled = true;
+const bool obj_light_enabled = false;
 const char obj_light_file[] = "../res/light.obj";
-const char sh_light_file[] = "../res/null.shrgb";
+const char sh_light_file[] = "../res/andi.shrgb";
 // shaders
 const char vert_shader_path[] = "../res/vert.glsl";
 // const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";

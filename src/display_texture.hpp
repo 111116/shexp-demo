@@ -50,12 +50,12 @@ namespace display_texture
 
 			in vec3 f_position;
 			out vec4 o_color;
-			// uniform samplerCubeArray u_map;
-			uniform sampler2D u_map;
+			uniform samplerCubeArray u_map;
+			// uniform sampler2D u_map;
 
 			void main()
 			{
-			    o_color = 0.1 * texture(u_map, vec2(f_position.x,0));
+			    o_color = 0.1 * texture(u_map, vec4(normalize(vec3(a_normal.xy, 1)),i));
 			    // o_color = vec4(f_position, 0.0);
 			}
 
@@ -79,7 +79,7 @@ namespace display_texture
 		// mesh
 		glUseProgram(program);
 		// textures
-		glUniform1i(glGetUniformLocation(program, "u_map"), 15);
+		glUniform1i(glGetUniformLocation(program, "u_map"), 0);
 		// vertices
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
