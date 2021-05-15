@@ -54,7 +54,6 @@ const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
 const char obj_file[] = "../res/andi1.obj";
 const char sphere_file[] = "../res/andi1.sph";
-const char texture_file[] = "../res/texture.png";
 // lighting
 const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/light.obj";
@@ -66,7 +65,8 @@ const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
 m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
-bool enable_texture[MAX_N_SHAPE] = {0,0,0,0};
+bool enable_texture[MAX_N_SHAPE] = {0,0,1,1};
+std::string texture_file[MAX_N_SHAPE] = {"../res/floor.jpg","../res/floor.jpg","../res/floor.jpg","../res/table.jpg"};
 m_vec3 light_color = {4,4,4};
 
 typedef struct
@@ -102,7 +102,6 @@ static void initScene(scene_t *scene)
 	SphereTree hierarchy = load_sphere_hierarchy(sphere_file);
 	buildLHcubemap(sh_light_file);
 	loadlut(3, scene->mesh.max_magn);
-	upload_albedo_map(texture_file);
 	build_sh_lut();
 	scene->mesh.gammasize = upload_gamma(shorder);
 	console.log("gamma size:", scene->mesh.gammasize);
@@ -117,6 +116,9 @@ static void initScene(scene_t *scene)
 	scene->mesh.vertices = 0;
 	for (int i = 0; i < yo->nshapes; i++)
 		scene->mesh.vertices += yo->shapes[i].nelems * 3;
+
+	// load model texture
+	upload_albedo_map(yo->nshapes, texture_file);
 
 	// alloc host space for attributes
 	m_vec3 *positions = (m_vec3*)calloc(scene->mesh.vertices, sizeof(m_vec3));

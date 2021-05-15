@@ -52,6 +52,6 @@ void uploadLH(int n_vert, const float* buffer)
 		for (int j=0; j<N_COEFFS; ++j)
 			texdata[j*1024*1024+i] = buffer[i*N_COEFFS+j];
 	glActiveTexture(GL_TEXTURE8);
-	create_2D_float_texture_array(1024, 1024, N_COEFFS, texdata, GL_NEAREST);
+	create_2D_float_texture_array(1024, 1024, 1, N_COEFFS, texdata, GL_NEAREST);
 	delete[] texdata;
 }
