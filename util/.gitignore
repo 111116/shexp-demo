@@ -3,3 +3,6 @@ test
 env_sh
 makelut
 *.exr
+sh2img
+sh2img_5
+sh2img_10

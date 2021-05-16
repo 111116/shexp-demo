@@ -1,0 +1,2 @@
+.sph files: sphere-set approximation of scene, used as blockers when shadowing
+.shrgb files: SH projection of environment light
