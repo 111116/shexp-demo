@@ -21,7 +21,7 @@ namespace {
 		console.log("loading log & OL lut (CPU)...");
 		float a[n_entry], b[n_entry], magn[n_entry];
 		// read lut from file
-		std::string filename = "../res/lut" + std::to_string(n);
+		std::string filename = "../lut/lut" + std::to_string(n);
 		std::ifstream fin(filename);
 		if (!fin) throw "cannot open lut";
 		for (int i=0; i<n_entry; ++i)

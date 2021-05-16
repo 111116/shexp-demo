@@ -59,11 +59,11 @@ const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/light.obj";
 const char sh_light_file[] = "../res/null.shrgb";
 // shaders
-const char vert_shader_path[] = "../res/vert.glsl";
-// const char vert_shader_path[] = "../res/vert_show_clusterid.glsl";
-const char frag_shader_path[] = "../res/frag.glsl";
-// const char frag_shader_path[] = "../res/frag_show_normal.glsl";
-// const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
+const char vert_shader_path[] = "../shaders/vert.glsl";
+// const char vert_shader_path[] = "../shaders/vert_show_clusterid.glsl";
+const char frag_shader_path[] = "../shaders/frag.glsl";
+// const char frag_shader_path[] = "../shaders/frag_show_normal.glsl";
+// const char frag_shader_path[] = "../shaders/frag_show_tessellation.glsl";
 m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
 bool enable_texture[MAX_N_SHAPE] = {1,1,1,1};
 std::string texture_file[MAX_N_SHAPE] = {
