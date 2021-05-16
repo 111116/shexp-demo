@@ -64,7 +64,7 @@ const char vert_shader_path[] = "../shaders/vert.glsl";
 const char frag_shader_path[] = "../shaders/frag.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_tessellation.glsl";
-m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
+m_vec3 obj_color[MAX_N_SHAPE] = {{1.5,1.5,1.5},{0.7,0.7,0.7},{2.12,2.12,2.12},{3.05,3.05,3.05}};
 bool enable_texture[MAX_N_SHAPE] = {1,1,1,1};
 std::string texture_file[MAX_N_SHAPE] = {
 	"../res/scene3/plane_blender.jpg",
