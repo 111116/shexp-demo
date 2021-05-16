@@ -87,6 +87,7 @@ typedef struct
 
 		float max_magn;
 		int gammasize;
+		int sqrgammasize;
 	} mesh;
 } scene_t;
 
@@ -108,7 +109,9 @@ static void initScene(scene_t *scene)
 	loadlut(3, scene->mesh.max_magn);
 	build_sh_lut();
 	scene->mesh.gammasize = upload_gamma(shorder);
+	scene->mesh.sqrgammasize = upload_sqrgamma(shorder);
 	console.log("gamma size:", scene->mesh.gammasize);
+	console.log("sqrgamma size:", scene->mesh.sqrgammasize);
 
 	// mesh
 	console.log("loading scene...");
@@ -256,12 +259,14 @@ static void drawScene(scene_t *scene, float *view, float *projection)
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sphere"), 4);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_ratio"), 5);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sparse"), 15);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_sqrsparse"), 16);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LH"), 8);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "u_LHcubemap"), 0);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "albedo_map"), 20);
 	// variables
 	glUniform1f(glGetUniformLocation(scene->mesh.program, "max_magn"), scene->mesh.max_magn);
 	glUniform1i(glGetUniformLocation(scene->mesh.program, "gammasize"), scene->mesh.gammasize);
+	glUniform1i(glGetUniformLocation(scene->mesh.program, "sqrgammasize"), scene->mesh.sqrgammasize);
 	// color
 	glUniform3fv(glGetUniformLocation(scene->mesh.program, "objcolor"), 10, &obj_color[0].x);
 	// vertices

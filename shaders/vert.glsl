@@ -16,20 +16,29 @@ uniform mat4 u_projection;
 out vec2 texcoord;
 out vec3 color; // linear color (radiance)
 flat out int objid;
+
 uniform samplerCubeArray u_sh_lut; // (dir, SHindex(l,m)) => evaluation of SH basis (l,m) at dir
+
 uniform sampler2D u_log_lut; // (l, half angle) => V of sphere blocker, SH-projected, value at band l
-uniform sampler2D u_ab_lut; // TODO, currently: (x, half angle) => coefficient, needs to be converted to be function of magnitude
+uniform sampler2D u_ab_lut; // (x, magnitude) => OL coefficient, a:x=0, b:x=1
+uniform float max_magn; // max magnitude (used for u_ab_lut lookup)
+
 uniform sampler2D u_sphere; // 1024x1024 texture of sphere (center, radius)
 uniform sampler2DArray u_ratio; // sh_order x 1024x1024 texture of ratio
+
 uniform sampler2DArray u_LH; // sh_order x 1024x1024 texture of per-vertex L*H (cosine-weighted lighting)
 uniform samplerCubeArray u_LHcubemap; // (dir, SHindex(l,m)) => L*H(dir), where L is environment light and H is cosine-weighted hemisphere
-uniform sampler2D u_sparse;
 
-uniform float max_magn;
+// sparse representation of gamma (SH tripling tensor)
 uniform int gammasize;
-uniform vec3 objcolor[10];
+uniform sampler2D u_sparse;
+// sparse representation of gamma, folded around symmetric axis x1=x2
+// (making squaring 2x as fast as arbitary multiplcation)
+uniform int sqrgammasize;
+uniform sampler2D u_sqrsparse;
 
-vec3 lightcolor = vec3(40,40,40);
+uniform vec3 objcolor[10];
+vec3 lightcolor = vec3(40,40,40); // TODO currently hard-coded
 
 
 
@@ -48,10 +57,19 @@ float[N] shmul(float[N] a, float[N] b)
     return g;
 }
 
-float[N] shsqr(float[N] f)
+float[N] shsqr(float[N] f) // equivalent to shmul(f,f) but faster
 {
-    // TODO optimize by symmetry
-    return shmul(f,f);
+    float[N] g = float[N](N_ZEROS);
+    for (int i=0; i<sqrgammasize; ++i)
+    {
+        vec4 lookup = texture(u_sqrsparse, vec2((i%1024+0.5f)/1024, (i/1024+0.5f)/1024));
+        int s_a = int(lookup.x);
+        int s_b = int(lookup.y);
+        int s_c = int(lookup.z);
+        float s_val = lookup.w;
+        g[s_c] += s_val * f[s_a] * f[s_b];
+    }
+    return g;
 }
 
 float[N] shexp_naive_linear(float[N] f)
