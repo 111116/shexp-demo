@@ -52,8 +52,8 @@ const int MAX_N_SHAPE = 10;
 const float FOV = 15.0f;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
-const char obj_file[] = "../res/andi1.obj";
-const char sphere_file[] = "../res/andi1.sph";
+const char obj_file[] = "../res/scene3/scene3.obj";
+const char sphere_file[] = "../res/scene3/scene3.sph";
 // lighting
 const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/light.obj";
@@ -65,9 +65,13 @@ const char frag_shader_path[] = "../res/frag.glsl";
 // const char frag_shader_path[] = "../res/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../res/frag_show_tessellation.glsl";
 m_vec3 obj_color[MAX_N_SHAPE] = {{1,1,1},{1,1,1},{1,1,1},{1,1,1}};
-bool enable_texture[MAX_N_SHAPE] = {0,0,1,1};
-std::string texture_file[MAX_N_SHAPE] = {"../res/floor.jpg","../res/floor.jpg","../res/floor.jpg","../res/table.jpg"};
-m_vec3 light_color = {4,4,4};
+bool enable_texture[MAX_N_SHAPE] = {1,1,1,1};
+std::string texture_file[MAX_N_SHAPE] = {
+	"../res/scene3/plane_blender.jpg",
+	"../res/scene3/fengye_s.jpg",
+	"../res/scene3/xiezi.jpg",
+	"../res/scene3/zz.jpg"};
+// m_vec3 light_color = {100,100,100};
 
 typedef struct
 {
@@ -305,7 +309,7 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	GLFWwindow *window = glfwCreateWindow(800, 800, "Spherical Harmonics Playground", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(800, 600, "Spherical Harmonics Playground", NULL, NULL);
 	if (!window) return 1;
 	glfwMakeContextCurrent(window);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);

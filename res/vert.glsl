@@ -29,6 +29,8 @@ uniform float max_magn;
 uniform int gammasize;
 uniform vec3 objcolor[10];
 
+vec3 lightcolor = vec3(40,40,40);
+
 
 
 float[N] shmul(float[N] a, float[N] b)
@@ -182,7 +184,7 @@ vec3[N] getLH()
 {
     vec3[N] res;
     for (int i=0; i<N; ++i)
-        res[i] = texture(u_LH, vec3((gl_VertexID%1024+0.5f)/1024, (gl_VertexID/1024+0.5f)/1024, i)).x * vec3(1,1,1)
+        res[i] = texture(u_LH, vec3((gl_VertexID%1024+0.5f)/1024, (gl_VertexID/1024+0.5f)/1024, i)).x * lightcolor
                + texture(u_LHcubemap, vec4(a_normal.xzy,i)).rgb;
     return res;
 }
