@@ -38,7 +38,7 @@ uniform int sqrgammasize;
 uniform sampler2D u_sqrsparse;
 
 uniform vec3 objcolor[10];
-vec3 lightcolor = vec3(10,10,10); // TODO currently hard-coded
+vec3 lightcolor = vec3(1,1,1); // TODO currently hard-coded
 
 
 

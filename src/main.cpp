@@ -49,14 +49,14 @@ extern "C"
 #include "loadtexture.hpp"
 
 const int MAX_N_SHAPE = 10;
-const float FOV = 15.0f;
+const float FOV = 180/PI*atan(1080.0/1920)*2;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
-const char obj_file[] = "../res/scene3/scene3.obj";
-const char sphere_file[] = "../res/scene3/scene3.sph";
+const char obj_file[] = "../res/scene2/scene2.obj";
+const char sphere_file[] = "../res/scene2/scene2.sph";
 // lighting
 const bool obj_light_enabled = true;
-const char obj_light_file[] = "../res/light.obj";
+const char obj_light_file[] = "../res/scene2/newlight.obj";
 const char sh_light_file[] = "../res/null.shrgb";
 // shaders
 const char vert_shader_path[] = "../shaders/vert.glsl";
@@ -64,10 +64,10 @@ const char vert_shader_path[] = "../shaders/vert.glsl";
 const char frag_shader_path[] = "../shaders/frag.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_tessellation.glsl";
-m_vec3 obj_color[MAX_N_SHAPE] = {{1.5,1.5,1.5},{0.7,0.7,0.7},{2.12,2.12,2.12},{3.05,3.05,3.05}};
+m_vec3 obj_color[MAX_N_SHAPE] = {{10,10,10},{10,10,10},{10,10,10},{80,80,80}};
 bool enable_texture[MAX_N_SHAPE] = {1,1,1,1};
 std::string texture_file[MAX_N_SHAPE] = {
-	"../res/scene3/plane_blender.jpg",
+	"../res/scene3/wood.jpg",
 	"../res/scene3/fengye_s.jpg",
 	"../res/scene3/xiezi.jpg",
 	"../res/scene3/zz.jpg"};
@@ -314,7 +314,7 @@ int main(int argc, char* argv[])
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	GLFWwindow *window = glfwCreateWindow(800, 600, "Spherical Harmonics Playground", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(960, 540, "Spherical Harmonics Playground", NULL, NULL);
 	if (!window) return 1;
 	glfwMakeContextCurrent(window);
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -358,6 +358,9 @@ int main(int argc, char* argv[])
 		float view[16], projection[16];
 		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
 		m_perspective44(projection, FOV, (float)w / (float)h, 0.01f, 100.0f);
+		console.warn("perspective");
+		for (int i=0; i<16; ++i)
+			console.log(projection[i]);
 		drawScene(&scene, view, projection);
 		// display_texture::draw();
 		if (!single_image_mode) {
@@ -413,8 +416,8 @@ void saveImage(const char filepath[], GLFWwindow* w) {
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	static float position[] = { 3.0f, 2.0f, 5.8f };
-	static float rotation[] = { -13.5766f, 27.4445f };
+	static float position[] = { 0.0075504, 0.833206 , 1.4920532 };
+	static float rotation[] = { -180/PI*atan2(position[1], norm(vec2f(position[0], position[2]))), 180/PI*atan2(position[0], position[2]) };
 
 	// mouse look
 	static double lastMouse[] = { 0.0, 0.0 };
@@ -461,7 +464,7 @@ static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInpu
 	// output camera parameters
 	// console.log("position:", position[0], position[1], position[2]);
 	// console.log("rotation:", rotation[0], rotation[1]);
-	// console.log("view");
-	// for (int i=0; i<16; ++i)
-	// 	console.log(view[i]);
+	console.warn("view");
+	for (int i=0; i<16; ++i)
+		console.log(view[i]);
 }
