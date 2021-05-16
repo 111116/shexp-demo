@@ -16,6 +16,6 @@ void main()
     	t *= texture(albedo_map, vec3(texcoord.x, 1-texcoord.y, objid)).xyz;
     // gamma correction
     float gamma = 2.2;
-    // t = pow(t, vec3(1.0/gamma));
+    t = pow(t, vec3(1.0/gamma));
     o_color = vec4(t, 1.0);
 }
