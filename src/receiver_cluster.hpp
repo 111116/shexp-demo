@@ -9,7 +9,11 @@
 #include "shorder.hpp"
 #include "loadtexture.hpp"
 
+namespace {
+static const float theta_max = (float)20/180*PI;
+static const float theta_min = (float)5/180*PI;
 const char cluster_file[] = "cluster.cache";
+}
 
 void cluster_points_recalculate(int n, int n_cluster, const vec3f* positions, int* clusterids);
 
@@ -164,8 +168,6 @@ void cluster_preprocess(int n, const vec3f* positions, const int* clusterids, co
 	float* sphdata = new float[texheight * texwidth * 4];
 	float* ratiodata = new float[shorder * texheight * texwidth];
 	// assemble bounding sphere nodes for shading each cluster
-	static const float theta_max = (float)20/180*PI;
-	static const float theta_min = (float)5/180*PI;
 	std::vector<float> cluster_blocker_count(n_cluster,0);
 	for (int c=0; c<n_cluster; ++c) {
 		// assemble blockers & calculate ratio vectors
