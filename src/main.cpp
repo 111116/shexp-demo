@@ -52,8 +52,8 @@ const int MAX_N_SHAPE = 10;
 const float FOV = 180/PI*atan(1080.0/1920)*2;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
-const char obj_file[] = "../res/zzscene_movetest/scene_moved2.obj";
-const char sphere_file[] = "../res/zzscene_movetest/scene_moved2.sph";
+const char obj_file[] = "../res/scene2/scene2_moved2.obj";
+const char sphere_file[] = "../res/scene2/scene2_moved2.sph";
 // lighting
 const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/scene2/newlight.obj";
@@ -67,10 +67,10 @@ const char frag_shader_path[] = "../shaders/frag.glsl";
 m_vec3 obj_color[MAX_N_SHAPE] = {{10,10,10},{10,10,10},{10,10,10},{80,80,80}};
 bool enable_texture[MAX_N_SHAPE] = {1,1,1,1};
 std::string texture_file[MAX_N_SHAPE] = {
-	"../res/scene3/wood.jpg",
-	"../res/scene3/fengye_s.jpg",
-	"../res/scene3/xiezi.jpg",
-	"../res/scene3/zz.jpg"};
+	"../res/scene2/wood.jpg",
+	"../res/scene2/fengye_s.jpg",
+	"../res/scene2/xiezi.jpg",
+	"../res/scene2/zz.jpg"};
 // m_vec3 light_color = {100,100,100};
 
 typedef struct
