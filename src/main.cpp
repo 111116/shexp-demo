@@ -416,8 +416,11 @@ void saveImage(const char filepath[], GLFWwindow* w) {
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	static float position[] = { 0.0075504, 0.833206 , 1.4920532 };
-	static float rotation[] = { -180/PI*atan2(position[1], norm(vec2f(position[0], position[2]))), 180/PI*atan2(position[0], position[2]) };
+	// static float position[] = { 0.0075504, 0.833206 , 1.4920532 }; // camera 1
+	static float position[] = { 1.3560844, 0.88     , 0.264 }; // camera 2
+	// static float lookat[] = {0,0,0}; // camera 1
+	static float lookat[] = {0,0,0.26}; // camera 2
+	static float rotation[] = { -180/PI*atan2(position[1] - lookat[1], norm(vec2f(position[0] - lookat[0], position[2] - lookat[2]))), 180/PI*atan2(position[0] - lookat[0], position[2] - lookat[2]) };
 
 	// mouse look
 	static double lastMouse[] = { 0.0, 0.0 };
