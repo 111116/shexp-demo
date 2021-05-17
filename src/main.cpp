@@ -64,7 +64,8 @@ const char vert_shader_path[] = "../shaders/vert.glsl";
 const char frag_shader_path[] = "../shaders/frag.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_tessellation.glsl";
-m_vec3 obj_color[MAX_N_SHAPE] = {{10,10,10},{10,10,10},{10,10,10},{10,10,10}};
+m_vec3 obj_color[MAX_N_SHAPE] = {{16,16,4},{6,6,6},{4.2,7.8,10.8},{2.3,2.3,2.5}};
+// m_vec3 obj_color[MAX_N_SHAPE] = {{10,10,10},{10,10,10},{10,10,10},{10,10,10}};
 bool enable_texture[MAX_N_SHAPE] = {0,1,0,0};
 std::string texture_file[MAX_N_SHAPE] = {
 	"../res/scene2/wood.jpg",
