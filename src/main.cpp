@@ -52,11 +52,11 @@ const int MAX_N_SHAPE = 10;
 const float FOV = 180/PI*atan(1080.0/1920)*2;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
-const char obj_file[] = "../res/scene2/scene2_moved2.obj";
-const char sphere_file[] = "../res/scene2/scene2_moved2.sph";
+const char obj_file[] = "../res/scene1/scene1.obj";
+const char sphere_file[] = "../res/scene1/scene1.sph";
 // lighting
 const bool obj_light_enabled = true;
-const char obj_light_file[] = "../res/scene2/newlight.obj";
+const char obj_light_file[] = "../res/scene1/light7.obj";
 const char sh_light_file[] = "../res/null.shrgb";
 // shaders
 const char vert_shader_path[] = "../shaders/vert.glsl";
@@ -64,11 +64,11 @@ const char vert_shader_path[] = "../shaders/vert.glsl";
 const char frag_shader_path[] = "../shaders/frag.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_normal.glsl";
 // const char frag_shader_path[] = "../shaders/frag_show_tessellation.glsl";
-m_vec3 obj_color[MAX_N_SHAPE] = {{10,10,10},{10,10,10},{10,10,10},{80,80,80}};
-bool enable_texture[MAX_N_SHAPE] = {1,1,1,1};
+m_vec3 obj_color[MAX_N_SHAPE] = {{10,10,10},{10,10,10},{10,10,10},{10,10,10}};
+bool enable_texture[MAX_N_SHAPE] = {0,1,0,0};
 std::string texture_file[MAX_N_SHAPE] = {
 	"../res/scene2/wood.jpg",
-	"../res/scene2/fengye_s.jpg",
+	"../res/scene1/plane_new.jpg",
 	"../res/scene2/xiezi.jpg",
 	"../res/scene2/zz.jpg"};
 // m_vec3 light_color = {100,100,100};
@@ -417,10 +417,8 @@ void saveImage(const char filepath[], GLFWwindow* w) {
 static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInput)
 {
 	// initial camera config
-	// static float position[] = { 0.0075504, 0.833206 , 1.4920532 }; // camera 1
-	static float position[] = { 1.3560844, 0.88     , 0.264 }; // camera 2
-	// static float lookat[] = {0,0,0}; // camera 1
-	static float lookat[] = {0,0,0.26}; // camera 2
+	static float position[] = { 0.3, 1.5 , 2 }; // camera 1
+	static float lookat[] = {0.3,0,0}; // camera 1
 	static float rotation[] = { -180/PI*atan2(position[1] - lookat[1], norm(vec2f(position[0] - lookat[0], position[2] - lookat[2]))), 180/PI*atan2(position[0] - lookat[0], position[2] - lookat[2]) };
 
 	// mouse look

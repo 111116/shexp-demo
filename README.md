@@ -30,6 +30,8 @@ To test at different SH order, edit `shorder.hpp`
 
 To change scene configuration / SHEXP algorithm, edit `main.cpp`
 
+Note: To obtain best results, `theta_max` and `theta_min` should be tuned.
+
 ### Preprocess tools
 
 `util/envmap` project θ-φ parameterized light probe image onto SH bases.
