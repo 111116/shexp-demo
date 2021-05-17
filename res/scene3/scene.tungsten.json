@@ -1,0 +1,8 @@
+{"primitives":[
+{"type":"mesh","file":"scene3.obj","bsdf":{"type":"lambert","albedo":0.8}},
+{"type": "mesh","file":"../light.obj","emission":10,"transform":{},"bsdf":{"type":"null"}}
+],
+"camera":{"resolution":[2048,2048],"transform":{"position": [3,2,5.76543], "look_at": [0.3119339,0.59153,0.624046], "up": [0,1,0]},"type":"pinhole","fov":20},
+"integrator": {"min_bounces": 1,"max_bounces": 2,"type": "path_tracer"},
+"renderer": {"scene_bvh": true,"spp": 16,"output_file": "demo.png"},
+}

@@ -52,8 +52,8 @@ const int MAX_N_SHAPE = 10;
 const float FOV = 180/PI*atan(1080.0/1920)*2;
 const char SHEXP_METHOD[] = "shexp_HYB";
 // scene models
-const char obj_file[] = "../res/scene2/scene2.obj";
-const char sphere_file[] = "../res/scene2/scene2.sph";
+const char obj_file[] = "../res/zzscene_movetest/scene_moved2.obj";
+const char sphere_file[] = "../res/zzscene_movetest/scene_moved2.sph";
 // lighting
 const bool obj_light_enabled = true;
 const char obj_light_file[] = "../res/scene2/newlight.obj";
@@ -358,9 +358,9 @@ int main(int argc, char* argv[])
 		float view[16], projection[16];
 		fpsCameraViewMatrix(window, view, ImGui::IsAnyItemActive());
 		m_perspective44(projection, FOV, (float)w / (float)h, 0.01f, 100.0f);
-		console.warn("perspective");
-		for (int i=0; i<16; ++i)
-			console.log(projection[i]);
+		// console.warn("perspective");
+		// for (int i=0; i<16; ++i)
+		// 	console.log(projection[i]);
 		drawScene(&scene, view, projection);
 		// display_texture::draw();
 		if (!single_image_mode) {
@@ -464,7 +464,7 @@ static void fpsCameraViewMatrix(GLFWwindow *window, float *view, bool ignoreInpu
 	// output camera parameters
 	// console.log("position:", position[0], position[1], position[2]);
 	// console.log("rotation:", rotation[0], rotation[1]);
-	console.warn("view");
-	for (int i=0; i<16; ++i)
-		console.log(view[i]);
+	// console.warn("view");
+	// for (int i=0; i<16; ++i)
+	// 	console.log(view[i]);
 }
