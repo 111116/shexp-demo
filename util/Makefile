@@ -5,6 +5,9 @@ all: env_sh test makelut
 env_sh: env_sh.cpp *.hpp
 	$(CXX) $(CXXFLAGS) $< sh.cpp lib/*.cpp -o $@
 
+env_flip: env_flip.cpp *.hpp
+	$(CXX) $(CXXFLAGS) $< sh.cpp lib/*.cpp -o $@
+
 test: test.cpp *.hpp
 	$(CXX) $(CXXFLAGS) $< sh.cpp lib/*.cpp -o $@
 
