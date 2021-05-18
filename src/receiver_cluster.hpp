@@ -10,8 +10,8 @@
 #include "loadtexture.hpp"
 
 namespace {
-static const float theta_max = (float)20/180*PI;
-static const float theta_min = (float)5/180*PI;
+static const float theta_max = (float)80/shorder/180*PI;
+static const float theta_min = (float)20/shorder/180*PI;
 const char cluster_file[] = "cluster.cache";
 }
 
